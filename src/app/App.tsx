@@ -3,13 +3,16 @@ import { HistoryScreen } from "../components/history/HistoryScreen";
 import { HomeScreen } from "../components/home/HomeScreen";
 import { InputScreen } from "../components/input/InputScreen";
 import { MobileShell } from "../components/layout/MobileShell";
+import { OnboardingScreen } from "../components/OnboardingScreen";
 import { ReportScreen } from "../components/report/ReportScreen";
+import { useOnboarding } from "../hooks/useOnboarding";
 import { useExpenseStore } from "../store/expenseStore";
 
 export function App() {
   const activeTab = useExpenseStore((state) => state.activeTab);
   const loadExpenses = useExpenseStore((state) => state.loadExpenses);
   const isLoading = useExpenseStore((state) => state.isLoading);
+  const { shouldShowOnboarding, completeOnboarding } = useOnboarding();
 
   useEffect(() => {
     void loadExpenses();
@@ -21,6 +24,10 @@ export function App() {
     history: <HistoryScreen />,
     report: <ReportScreen />
   }[activeTab];
+
+  if (shouldShowOnboarding) {
+    return <OnboardingScreen onComplete={completeOnboarding} />;
+  }
 
   return (
     <MobileShell>

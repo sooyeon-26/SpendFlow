@@ -1432,3 +1432,236 @@ button {
     border-radius: 38px;
   }
 }
+
+.onboarding-screen {
+  position: relative;
+  width: min(100vw, 393px);
+  min-height: 100dvh;
+  height: 100dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: max(22px, env(safe-area-inset-top)) 22px calc(18px + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 26% 13%, rgba(255, 255, 255, 0.86), transparent 8rem),
+    radial-gradient(circle at 82% 18%, rgba(125, 230, 226, 0.36), transparent 11rem),
+    linear-gradient(180deg, #e3f9ff 0%, #fbfeff 52%, #e6f9ff 100%);
+  color: #171939;
+  isolation: isolate;
+  touch-action: pan-y;
+}
+
+.onboarding-ambient {
+  position: absolute;
+  z-index: -1;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(3px);
+}
+
+.onboarding-ambient-one {
+  width: 210px;
+  height: 210px;
+  top: 72px;
+  right: -104px;
+  background: rgba(95, 209, 236, 0.22);
+}
+
+.onboarding-ambient-two {
+  width: 160px;
+  height: 160px;
+  left: -76px;
+  bottom: 118px;
+  background: rgba(114, 233, 211, 0.2);
+}
+
+.onboarding-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(22px, 5dvh, 42px);
+  text-align: center;
+}
+
+.onboarding-visual {
+  width: min(64vw, 238px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.42));
+  box-shadow: 0 22px 54px rgba(36, 108, 146, 0.13);
+  backdrop-filter: blur(22px);
+}
+
+.onboarding-level-mark {
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 14px 32px rgba(32, 184, 242, 0.16);
+}
+
+.onboarding-level-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.onboarding-alert-mark,
+.onboarding-briefing-mark {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+  border-radius: 34px;
+  color: #178ecf;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(221, 248, 255, 0.58));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.72);
+}
+
+.onboarding-alert-mark::before,
+.onboarding-alert-mark::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  border: 2px solid rgba(32, 184, 242, 0.28);
+}
+
+.onboarding-alert-mark::before {
+  width: 86px;
+  height: 86px;
+}
+
+.onboarding-alert-mark::after {
+  width: 112px;
+  height: 112px;
+  opacity: 0.46;
+}
+
+.onboarding-alert-mark span {
+  position: absolute;
+  top: 35px;
+  right: 39px;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: #f4b23e;
+  box-shadow: 0 0 0 8px rgba(244, 178, 62, 0.16);
+}
+
+.onboarding-briefing-mark {
+  align-content: center;
+  gap: 8px;
+}
+
+.onboarding-briefing-mark i,
+.onboarding-briefing-mark b {
+  display: block;
+  width: 66px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(32, 184, 242, 0.18);
+}
+
+.onboarding-briefing-mark b {
+  width: 48px;
+  background: rgba(23, 25, 57, 0.1);
+}
+
+.onboarding-copy p {
+  margin: 0 0 12px;
+  color: rgba(23, 25, 57, 0.48);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.onboarding-copy h1 {
+  margin: 0;
+  color: #171939;
+  font-size: clamp(28px, 8vw, 34px);
+  line-height: 1.13;
+  font-weight: 860;
+  letter-spacing: 0;
+}
+
+.onboarding-copy span {
+  display: block;
+  margin-top: 14px;
+  white-space: pre-line;
+  color: rgba(23, 25, 57, 0.62);
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 690;
+}
+
+.onboarding-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.onboarding-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 25, 57, 0.16);
+}
+
+.onboarding-dot-active {
+  width: 24px;
+  background: #20b8f2;
+}
+
+.onboarding-primary-button {
+  min-height: 54px;
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #20b8f2, #168bda);
+  box-shadow: 0 16px 34px rgba(20, 157, 224, 0.22);
+  font-size: 15px;
+  font-weight: 840;
+}
+
+.onboarding-primary-button:focus-visible,
+.onboarding-dot:focus-visible {
+  outline: 3px solid rgba(20, 157, 224, 0.24);
+  outline-offset: 3px;
+}
+
+@media (max-height: 700px) {
+  .onboarding-screen {
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
+  .onboarding-visual {
+    width: min(52vw, 190px);
+  }
+
+  .onboarding-copy h1 {
+    font-size: 26px;
+  }
+
+  .onboarding-copy span {
+    font-size: 14px;
+  }
+}
