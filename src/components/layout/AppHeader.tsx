@@ -11,6 +11,8 @@ export function AppHeader() {
   const activeTab = useExpenseStore((state) => state.activeTab);
   const copy = titles[activeTab];
 
+  if (activeTab === "home") return null;
+
   return (
     <header className="app-header">
       <div>

@@ -1,37 +1,22 @@
-import { mockExpenses } from "../data/mockExpenses";
 import type { Expense } from "../types/expense";
-
-const STORAGE_KEY = "spendflow_expenses";
-
-function readStorage(): Expense[] {
-  if (typeof window === "undefined") return mockExpenses;
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (!saved) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mockExpenses));
-    return mockExpenses;
-  }
-  try {
-    return JSON.parse(saved) as Expense[];
-  } catch {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mockExpenses));
-    return mockExpenses;
-  }
-}
+import { addExpenseToStorage, deleteExpenseFromStorage, readExpensesFromStorage, updateExpenseInStorage, writeExpensesToStorage } from "../utils/expenseStorage";
 
 export async function getExpenses(): Promise<Expense[]> {
-  return readStorage();
+  return readExpensesFromStorage();
 }
 
 export async function saveExpenses(expenses: Expense[]): Promise<void> {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+  writeExpensesToStorage(expenses);
 }
 
 export async function addExpense(expense: Expense): Promise<void> {
-  const expenses = await getExpenses();
-  await saveExpenses([expense, ...expenses]);
+  addExpenseToStorage(expense);
+}
+
+export async function updateExpense(id: string, updates: Partial<Expense>): Promise<void> {
+  updateExpenseInStorage(id, updates);
 }
 
 export async function deleteExpense(id: string): Promise<void> {
-  const expenses = await getExpenses();
-  await saveExpenses(expenses.filter((expense) => expense.id !== id));
+  deleteExpenseFromStorage(id);
 }

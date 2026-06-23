@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { defaultBudget } from "../data/defaultBudget";
-import { addExpense as addExpenseToRepo, deleteExpense as deleteExpenseFromRepo, getExpenses } from "../services/expenseRepository";
+import { addExpense as addExpenseToRepo, deleteExpense as deleteExpenseFromRepo, getExpenses, updateExpense as updateExpenseInRepo } from "../services/expenseRepository";
 import { notifyExpenseCreated } from "../services/automationWebhook";
 import type { Budget, Expense, TabId } from "../types/expense";
 
@@ -18,6 +18,7 @@ type ExpenseState = {
   selectedCategory: string;
   loadExpenses: () => Promise<void>;
   addExpense: (expense: Expense) => Promise<void>;
+  updateExpense: (id: string, updates: Partial<Expense>) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   setActiveTab: (tab: TabId) => void;
   setSelectedCategory: (category: string) => void;
@@ -25,7 +26,7 @@ type ExpenseState = {
   hideToast: () => void;
 };
 
-export const useExpenseStore = create<ExpenseState>((set) => ({
+export const useExpenseStore = create<ExpenseState>((set, get) => ({
   expenses: [],
   budget: defaultBudget,
   activeTab: "home",
@@ -38,9 +39,16 @@ export const useExpenseStore = create<ExpenseState>((set) => ({
   },
   addExpense: async (expense) => {
     await addExpenseToRepo(expense);
-    await notifyExpenseCreated(expense);
     const expenses = await getExpenses();
     set({ expenses, toast: { message: "오늘의 소비가 흐름에 추가됐어요", visible: true } });
+    void notifyExpenseCreated(expense, expenses, get().budget).catch((error) => {
+      console.warn("[SpendFlow webhook skipped]", error);
+    });
+  },
+  updateExpense: async (id, updates) => {
+    await updateExpenseInRepo(id, updates);
+    const expenses = await getExpenses();
+    set({ expenses, toast: { message: "소비 흐름을 수정했어요", visible: true } });
   },
   deleteExpense: async (id) => {
     await deleteExpenseFromRepo(id);

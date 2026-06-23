@@ -1,4 +1,5 @@
 import type { ExpenseCategory, ParsedExpenseResult } from "../types/expense";
+import { DEFAULT_PAYMENT_METHOD } from "../constants/expenses";
 import { toDateKey } from "./date";
 
 const categoryKeywords: Record<ExpenseCategory, string[]> = {
@@ -43,8 +44,10 @@ export function parseExpenseText(text: string): ParsedExpenseResult {
     merchant,
     amount,
     category,
+    paymentMethod: DEFAULT_PAYMENT_METHOD,
     source: "mock-ai",
     confidence,
-    needsReview: confidence < 0.8
+    needsReview: confidence < 0.8,
+    memo: text
   };
 }

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { GlassCard } from "../ui/GlassCard";
-import { WaveProgress } from "../ui/WaveProgress";
+import { WaveProgress, type WaveProgressHandle } from "../ui/WaveProgress";
 import { formatPercent, formatWon } from "../../utils/format";
+import { getBudgetStatusMessage } from "../../utils/analytics";
 
 type BudgetLevelCardProps = {
   spent: number;
@@ -9,79 +9,68 @@ type BudgetLevelCardProps = {
   usage: number;
 };
 
-type Ripple = {
-  id: number;
-  x: number;
-  y: number;
-};
-
-function statusText(usage: number): string {
-  if (usage >= 100) return "예산 수위를 넘었어요";
-  if (usage >= 80) return "위험 수위에 가까워졌어요";
-  if (usage >= 60) return "소비 수위가 조금씩 차오르고 있어요";
-  return "잔잔한 소비 흐름을 유지하고 있어요";
-}
-
 export function BudgetLevelCard({ spent, monthlyBudget, usage }: BudgetLevelCardProps) {
-  const originRef = useRef({ x: 0, y: 0 });
+  const cardRef = useRef<HTMLElement | null>(null);
+  const waveRef = useRef<WaveProgressHandle | null>(null);
+  const lastMoveRef = useRef({ x: 0, y: 0, time: 0 });
+  const velocityRef = useRef({ x: 0, y: 0 });
   const [isTouching, setIsTouching] = useState(false);
-  const [drift, setDrift] = useState({ x: 0, y: 0 });
-  const [ripples, setRipples] = useState<Ripple[]>([]);
 
-  const addRipple = (clientX: number, clientY: number, target: EventTarget | null) => {
-    if (!(target instanceof HTMLElement)) return;
-    const card = target.closest(".budget-card");
-    if (!(card instanceof HTMLElement)) return;
+  const getImpulsePoint = (clientX: number, clientY: number) => {
+    const card = cardRef.current;
+    if (!card) return { x: 0.5, y: 0.5 };
     const rect = card.getBoundingClientRect();
-    const ripple = { id: Date.now(), x: clientX - rect.left, y: clientY - rect.top };
-    setRipples((items) => [...items.slice(-2), ripple]);
-    window.setTimeout(() => {
-      setRipples((items) => items.filter((item) => item.id !== ripple.id));
-    }, 780);
+    return {
+      x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+      y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
+    };
   };
 
   const settleWater = () => {
     setIsTouching(false);
-    setDrift({ x: 0, y: 0 });
+    const point = getImpulsePoint(lastMoveRef.current.x, lastMoveRef.current.y);
+    waveRef.current?.release({ ...point, vx: velocityRef.current.x, vy: velocityRef.current.y, force: 0.9 });
   };
 
   return (
-    <GlassCard
+    <section
+      ref={cardRef}
       className={`budget-card ${isTouching ? "budget-card-touching" : ""} ${usage >= 100 ? "danger-ring" : usage >= 80 ? "warning-ring" : ""}`}
       onPointerDown={(event) => {
-        originRef.current = { x: event.clientX, y: event.clientY };
+        event.preventDefault();
+        lastMoveRef.current = { x: event.clientX, y: event.clientY, time: performance.now() };
+        velocityRef.current = { x: 0, y: 0 };
         setIsTouching(true);
-        addRipple(event.clientX, event.clientY, event.currentTarget);
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        waveRef.current?.disturb({ ...getImpulsePoint(event.clientX, event.clientY), force: 1.35, mode: "press" });
       }}
       onPointerMove={(event) => {
-        if (!isTouching || event.pointerType === "mouse") return;
-        const dx = event.clientX - originRef.current.x;
-        const dy = event.clientY - originRef.current.y;
-        setDrift({
-          x: Math.max(-12, Math.min(12, dx * 0.08)),
-          y: Math.max(-7, Math.min(7, dy * 0.05))
-        });
+        if (!isTouching) return;
+        event.preventDefault();
+        const now = performance.now();
+        const elapsed = Math.max(16, now - lastMoveRef.current.time);
+        const vx = (event.clientX - lastMoveRef.current.x) / elapsed;
+        const vy = (event.clientY - lastMoveRef.current.y) / elapsed;
+        const speed = Math.hypot(vx, vy);
+        velocityRef.current = { x: vx, y: vy };
+        lastMoveRef.current = { x: event.clientX, y: event.clientY, time: now };
+        waveRef.current?.disturb({ ...getImpulsePoint(event.clientX, event.clientY), vx, vy, force: Math.min(1.8, 0.65 + speed * 1.9), mode: "drag" });
       }}
       onPointerUp={settleWater}
       onPointerCancel={settleWater}
       onPointerLeave={settleWater}
     >
-      <WaveProgress percentage={usage} driftX={drift.x} driftY={drift.y} active={isTouching} />
-      {ripples.map((ripple) => (
-        <span
-          key={ripple.id}
-          className="budget-ripple"
-          style={{ left: ripple.x, top: ripple.y }}
-          aria-hidden="true"
-        />
-      ))}
+      <WaveProgress ref={waveRef} percentage={usage} />
       <div className="budget-content">
-        <p className="section-kicker">이번 달 소비 수위</p>
-        <div className="budget-percent">{formatPercent(usage)}</div>
-        <p className="budget-main-amount">{formatWon(spent)} 사용</p>
-        <p className="budget-sub-amount">전체 예산 {formatWon(monthlyBudget)} 중</p>
-        <p className="budget-status">{statusText(usage)}</p>
+        <div className="budget-text-stack">
+          <p className="budget-eyebrow">오늘의 소비 흐름</p>
+          <p className="section-kicker">이번 달 소비 수위</p>
+          <div className="budget-percent">{formatPercent(usage)}</div>
+          <p className="budget-main-amount">{formatWon(spent)} 사용</p>
+          <p className="budget-sub-amount">전체 예산 {formatWon(monthlyBudget)} 중</p>
+          <p className="budget-status">{getBudgetStatusMessage(usage)}</p>
+        </div>
       </div>
-    </GlassCard>
+    </section>
   );
 }

@@ -7,6 +7,14 @@ export function getTotalSpent(expenses: Expense[]): number {
   return expenses.filter((expense) => isSameMonth(expense.date)).reduce((sum, expense) => sum + expense.amount, 0);
 }
 
+export function getMonthlySpent(expenses: Expense[]): number {
+  return getTotalSpent(expenses);
+}
+
+export function getRemainingBudget(expenses: Expense[], monthlyBudget: number): number {
+  return monthlyBudget - getMonthlySpent(expenses);
+}
+
 export function getTodaySpent(expenses: Expense[]): number {
   const today = toDateKey(new Date());
   return expenses.filter((expense) => expense.date === today).reduce((sum, expense) => sum + expense.amount, 0);
@@ -28,8 +36,9 @@ export function getPreviousWeeklySpent(expenses: Expense[]): number {
 }
 
 export function getCategoryTotals(expenses: Expense[]): Record<ExpenseCategory, number> {
+  const monthlyExpenses = expenses.filter((expense) => isSameMonth(expense.date));
   return categories.reduce<Record<ExpenseCategory, number>>((totals, category) => {
-    totals[category] = expenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0);
+    totals[category] = monthlyExpenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0);
     return totals;
   }, {} as Record<ExpenseCategory, number>);
 }
@@ -38,11 +47,41 @@ export function getBudgetUsage(totalSpent: number, monthlyBudget: number): numbe
   return monthlyBudget > 0 ? (totalSpent / monthlyBudget) * 100 : 0;
 }
 
+export function getBudgetStatusMessage(percentage: number): string {
+  if (percentage >= 100) return "예산을 초과했어요";
+  if (percentage >= 91) return "예산 초과 직전이에요";
+  if (percentage >= 71) return "예산에 가까워지고 있어요";
+  if (percentage >= 41) return "소비 수위가 조금씩 차오르고 있어요";
+  return "아직 여유 있어요";
+}
+
 export function getTopCategory(expenses: Expense[]): { category: ExpenseCategory; amount: number } {
   const totals = getCategoryTotals(expenses);
   return categories
     .map((category) => ({ category, amount: totals[category] }))
     .sort((a, b) => b.amount - a.amount)[0];
+}
+
+export function getRecentExpenses(expenses: Expense[], limit = 5): Expense[] {
+  return [...expenses]
+    .sort((a, b) => {
+      const dateDiff = new Date(`${b.date}T00:00:00`).getTime() - new Date(`${a.date}T00:00:00`).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    })
+    .slice(0, limit);
+}
+
+export function getCategorySummary(expenses: Expense[]) {
+  const totals = getCategoryTotals(expenses);
+  return categories
+    .map((category) => ({ category, amount: totals[category] }))
+    .filter((row) => row.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+}
+
+export function getDaySpent(expenses: Expense[], dateKey: string): number {
+  return expenses.filter((expense) => expense.date === dateKey).reduce((sum, expense) => sum + expense.amount, 0);
 }
 
 export function getRecent7DaysData(expenses: Expense[]) {

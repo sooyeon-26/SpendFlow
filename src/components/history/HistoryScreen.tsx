@@ -11,7 +11,8 @@ export function HistoryScreen() {
   const selectedCategory = useExpenseStore((state) => state.selectedCategory);
   const deleteExpense = useExpenseStore((state) => state.deleteExpense);
   const total = getTotalSpent(expenses);
-  const filtered = selectedCategory === "전체" ? expenses : expenses.filter((expense) => expense.category === selectedCategory);
+  const sorted = [...expenses].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filtered = selectedCategory === "전체" ? sorted : sorted.filter((expense) => expense.category === selectedCategory);
 
   return (
     <div className="screen-stack">

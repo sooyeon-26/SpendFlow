@@ -24,6 +24,7 @@ export function ExpensePreviewCard({ preview, onSave, onReset }: ExpensePreviewC
       </div>
       <div className="preview-list">
         <div><span>카테고리</span><strong>{preview.category}</strong></div>
+        <div><span>결제수단</span><strong>{preview.paymentMethod}</strong></div>
         <div><span>신뢰도</span><strong>{formatPercent(preview.confidence * 100)}</strong></div>
         <div><span>상태</span><strong>{preview.needsReview ? "확인 필요" : "확인 필요 없음"}</strong></div>
       </div>

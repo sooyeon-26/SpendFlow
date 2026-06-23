@@ -1,7 +1,8 @@
 import type { Budget } from "../types/expense";
+import { DEFAULT_MONTHLY_BUDGET } from "../constants/expenses";
 
 export const defaultBudget: Budget = {
-  monthlyBudget: 500000,
+  monthlyBudget: DEFAULT_MONTHLY_BUDGET,
   categoryBudgets: {
     식비: 180000,
     카페: 50000,

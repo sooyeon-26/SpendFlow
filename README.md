@@ -1,6 +1,6 @@
 # SpendFlow
 
-SpendFlow는 개인 소비 데이터를 자동으로 입력, 분류, 분석하고 예산 위험 수위와 주간 소비 흐름을 보여주는 iPhone 14 Pro 최적화 모바일 웹앱/PWA입니다.
+SpendFlow는 소비 데이터를 자동으로 입력, 분류, 분석하고 예산 사용률을 물의 수위로 시각화하는 iPhone 최적화 PWA입니다.
 
 ## 문제 정의
 
@@ -23,8 +23,17 @@ SpendFlow는 개인 소비 데이터를 자동으로 입력, 분류, 분석하�
 - 예산 수위 wave progress
 - 최근 7일 소비 흐름 차트
 - 주간 리포트, 반복 소비 감지, 위험 수위 카테고리 표시
-- 모바일 토스트, 하단 탭바, 큰 원형 추가 버튼
+- 모바일 토스트와 하단 탭바
 - PWA 기본 manifest와 iPhone 메타 태그
+
+## 2단계 개발 내용
+
+- PWA manifest 보강
+- iPhone 홈 화면 추가 지원
+- PNG 앱 아이콘과 Apple touch icon 적용
+- standalone 모드 대응 유틸 추가
+- iPhone safe area와 하단 탭바 여백 최적화
+- 실제 iPhone 테스트와 포트폴리오 캡처 방법 정리
 
 ## 자동화 플로우
 
@@ -51,10 +60,18 @@ SpendFlow는 개인 소비 데이터를 자동으로 입력, 분류, 분석하�
 ```txt
 소비 저장
 → addExpense()
-→ notifyExpenseCreated(expense)
-→ n8n Webhook
+→ notifyExpenseCreated(expense, expenses, budget)
+→ sendSpendAlertWebhook(payload)
 → 예산 위험 알림 / 주간 리포트 자동화
 ```
+
+`VITE_N8N_WEBHOOK_URL`이 설정되어 있으면 조건 충족 시 webhook으로 payload를 전송합니다. URL이 없으면 개발 중 확인하기 쉽도록 콘솔에 payload를 출력합니다.
+
+현재 알림 조건:
+
+- 월 예산 80% 이상 도달
+- 월 예산 100% 이상 초과
+- 하루 소비 50,000원 이상
 
 ## 기술 스택
 
@@ -63,7 +80,6 @@ SpendFlow는 개인 소비 데이터를 자동으로 입력, 분류, 분석하�
 - Vite
 - Tailwind CSS
 - Zustand
-- Recharts
 - localStorage
 - PWA manifest
 
@@ -95,6 +111,12 @@ npm run dev
 ```
 
 Vite dev server는 외부 기기 접속을 위해 기본적으로 `--host 0.0.0.0`으로 실행됩니다.
+
+로컬 네트워크 테스트를 명시적으로 실행하려면 아래 명령을 사용합니다.
+
+```bash
+npm run dev -- --host 0.0.0.0
+```
 
 ## iPhone 실제 테스트 방법
 
@@ -151,15 +173,35 @@ cloudflared tunnel --url http://localhost:5173
 
 `public/manifest.json`과 `index.html`의 iPhone 메타 태그를 포함했습니다. `theme_color`, `display: standalone`, `orientation: portrait`, safe area 대응 CSS가 적용되어 홈 화면 추가 테스트를 할 수 있습니다.
 
+PWA 관련 파일 구조:
+
+```txt
+public/
+  manifest.json
+  icons/
+    icon-192.png
+    icon-512.png
+    maskable-512.png
+    apple-touch-icon.png
+
+src/
+  utils/
+    pwa.ts
+```
+
 ## iPhone PWA 캡처 방법
 
 주소창 없는 앱 화면으로 테스트하거나 캡처하려면 아래 순서로 진행합니다.
 
-1. iPhone Safari에서 Vite Network 주소를 엽니다.
+1. iPhone Safari에서 SpendFlow Network 주소를 엽니다.
 2. Safari 하단 공유 버튼을 누릅니다.
 3. “홈 화면에 추가”를 선택합니다.
-4. 홈 화면에 추가된 SpendFlow 아이콘으로 앱을 실행합니다.
+4. 홈 화면에 생성된 SpendFlow 아이콘을 실행합니다.
 5. 주소창 없는 standalone 화면에서 레이아웃, safe area, 스크롤, 캡처 상태를 확인합니다.
+
+포트폴리오용 화면 캡처는 Safari 주소창이 보이는 일반 브라우저 화면보다, 홈 화면에 추가한 PWA standalone 모드에서 촬영하는 것을 권장합니다.
+
+이 방식은 주소창 없이 실제 앱처럼 보이고, 하단 탭바와 safe area가 자연스럽게 보여 iPhone 앱 형태의 포트폴리오 이미지로 사용하기 좋습니다.
 
 ## localStorage 사용 이유
 
@@ -178,7 +220,7 @@ cloudflared tunnel --url http://localhost:5173
 
 ## 향후 n8n Webhook 연동 계획
 
-현재 `src/services/automationWebhook.ts`는 no-op입니다. 향후 새 소비 저장 시 n8n Webhook을 호출해 예산 위험 수위 알림, 주간 리포트 자동 생성, Notion/Google Sheets 저장, Slack/Telegram/Email 알림을 연결할 수 있습니다.
+현재 `src/services/automationWebhook.ts`는 `VITE_N8N_WEBHOOK_URL` 기반으로 n8n Webhook 전송을 준비합니다. 새 소비 저장 시 예산 80% 도달, 예산 초과, 하루 50,000원 이상 소비 조건을 평가하고, URL이 없으면 payload를 콘솔에서 미리 볼 수 있습니다.
 
 ## 확장 아이디어
 

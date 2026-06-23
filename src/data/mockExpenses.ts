@@ -1,4 +1,5 @@
 import type { Expense } from "../types/expense";
+import { DEFAULT_PAYMENT_METHOD } from "../constants/expenses";
 import { daysAgo } from "../utils/date";
 
 function expense(days: number, merchant: string, amount: number, category: Expense["category"], confidence = 0.92): Expense {
@@ -9,13 +10,26 @@ function expense(days: number, merchant: string, amount: number, category: Expen
     merchant,
     amount,
     category,
+    paymentMethod: DEFAULT_PAYMENT_METHOD,
     source: "mock-ai",
     confidence,
     needsReview: confidence < 0.8,
+    memo: merchant,
     createdAt: `${date}T09:30:00.000Z`
   };
 }
 
+// 테스트 케이스 메모
+// safe: defaultBudget.monthlyBudget 기준 총 소비를 30% 이하로 낮추면 위험 알림 없이 긍정 인사이트를 확인할 수 있어요.
+// warning: currentSpent가 monthlyBudget의 80% 이상 100% 이하가 되도록 amount를 올리면 BUDGET_WARNING이 표시돼요.
+// over: currentSpent가 monthlyBudget을 초과하도록 amount를 올리면 BUDGET_OVER가 표시돼요.
+// category concentration: 한 카테고리 amount 합계가 전체 소비의 40% 이상이면 CATEGORY_CONCENTRATION이 표시돼요.
+// weekly spike: days 0~6 소비 합계가 days 7~13 소비 합계보다 30% 이상 크면 WEEKLY_SPIKE가 표시돼요.
+// daily report safe: 위험 조건 없는 일반 데일리 브리핑은 safe 상태의 데이터로 확인할 수 있어요.
+// daily report warning: 예산 80% 이상 사용한 데일리 브리핑은 warning 상태의 데이터로 확인할 수 있어요.
+// daily report over: 예산 초과 데일리 브리핑은 over 상태의 데이터로 확인할 수 있어요.
+// daily report category concentration: 특정 카테고리 집중 소비가 포함된 데일리 브리핑은 category concentration 상태로 확인할 수 있어요.
+// daily report zero today: 오늘 소비 금액이 0원인 브리핑은 days 0 항목을 제거하거나 날짜를 이전 날짜로 바꿔 확인할 수 있어요.
 export const mockExpenses: Expense[] = [
   expense(0, "스타벅스", 6800, "카페", 0.96),
   expense(0, "지하철", 1550, "교통", 0.95),

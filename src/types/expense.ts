@@ -1,15 +1,18 @@
 export type ExpenseCategory = "식비" | "카페" | "교통" | "쇼핑" | "구독" | "생활" | "기타";
 
+export type PaymentMethod = "카드" | "현금" | "계좌이체" | "간편결제" | "기타";
+
 export type Expense = {
   id: string;
   date: string;
   merchant: string;
   amount: number;
   category: ExpenseCategory;
+  paymentMethod: PaymentMethod;
   source: "manual" | "mock-ai";
   confidence: number;
   needsReview: boolean;
-  memo?: string;
+  memo: string;
   createdAt: string;
 };
 
