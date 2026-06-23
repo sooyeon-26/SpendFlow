@@ -1,0 +1,18 @@
+{
+  "name": "SpendFlow",
+  "short_name": "SpendFlow",
+  "description": "소비 흐름과 예산 수위를 자동으로 보여주는 모바일 PWA",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#dff7ff",
+  "background_color": "#eefbff",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

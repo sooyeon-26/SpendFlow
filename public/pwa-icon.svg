@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#dff7ff"/>
+  <path d="M86 305c57-63 101 34 168-20s105-23 172 5v121H86z" fill="#37b8f0" opacity=".86"/>
+  <path d="M104 249c60-48 103 23 163-19 56-39 91-27 141-2" fill="none" stroke="#171939" stroke-width="28" stroke-linecap="round"/>
+  <circle cx="259" cy="170" r="76" fill="#fff" opacity=".78"/>
+  <text x="256" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="74" font-weight="700" fill="#171939">₩</text>
+</svg>
