@@ -10,6 +10,7 @@ export const defaultBudget: Budget = {
     쇼핑: 100000,
     구독: 30000,
     생활: 50000,
+    문화: 30000,
     기타: 20000
   }
 };

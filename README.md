@@ -222,6 +222,121 @@ src/
 
 현재 `src/services/automationWebhook.ts`는 `VITE_N8N_WEBHOOK_URL` 기반으로 n8n Webhook 전송을 준비합니다. 새 소비 저장 시 예산 80% 도달, 예산 초과, 하루 50,000원 이상 소비 조건을 평가하고, URL이 없으면 payload를 콘솔에서 미리 볼 수 있습니다.
 
+## n8n Slack 알림 payload
+
+새 소비가 저장되면 SpendFlow는 n8n Webhook으로 `expense_created` payload를 1회 전송합니다. payload 안에는 기본 소비 요약용 `slack.summaryMessage`가 항상 포함되고, 위험 조건이 감지되면 `slack.riskMessage`가 함께 포함됩니다.
+
+```json
+{
+  "app": "SpendFlow",
+  "event": "expense_created",
+  "hasRiskAlert": false,
+  "alertType": null,
+  "severity": "normal",
+  "title": "💧 SpendFlow 소비 요약",
+  "message": "소비 흐름이 안정적이에요.",
+  "actionSuggestion": "현재 흐름은 안정적이에요. 오늘의 소비 기록을 기준으로 예산 수위를 계속 확인할게요.",
+  "expense": {
+    "amount": 6800,
+    "category": "카페",
+    "paymentMethod": "카드",
+    "memo": "아이스라떼"
+  },
+  "summary": {
+    "monthlyBudget": 500000,
+    "monthlySpent": 260000,
+    "remainingBudget": 240000,
+    "usageRate": 52,
+    "dailySpent": 6800
+  },
+  "slack": {
+    "summaryMessage": {
+      "text": "💧 SpendFlow 소비 요약 - 최근 소비 6,800원 · 카페 · 카드, 이번 달 260,000원 / 500,000원 (52%)",
+      "blocks": [],
+      "blocksJson": "[]"
+    },
+    "riskMessage": null
+  },
+  "createdAt": "2026-06-29T10:00:00.000Z"
+}
+```
+
+위험 조건이 감지된 payload 예시는 아래와 같습니다.
+
+```json
+{
+  "app": "SpendFlow",
+  "event": "expense_created",
+  "hasRiskAlert": true,
+  "alertType": "budget_warning",
+  "severity": "warning",
+  "title": "⚠️ SpendFlow 위험 알림",
+  "message": "이번 달 예산의 84%를 사용 중이에요.",
+  "actionSuggestion": "이번 달 예산의 84%를 사용 중이에요. 이번 주에는 쇼핑 지출을 1~2회 줄이면 예산 안에서 관리하기 쉬워요.",
+  "expense": {
+    "amount": 42000,
+    "category": "쇼핑",
+    "paymentMethod": "간편결제",
+    "memo": "생활용품"
+  },
+  "summary": {
+    "monthlyBudget": 500000,
+    "monthlySpent": 420000,
+    "remainingBudget": 80000,
+    "usageRate": 84,
+    "dailySpent": 42000
+  },
+  "slack": {
+    "summaryMessage": {
+      "text": "💧 SpendFlow 소비 요약 - 최근 소비 42,000원 · 쇼핑 · 간편결제, 이번 달 420,000원 / 500,000원 (84%)",
+      "blocks": [],
+      "blocksJson": "[]"
+    },
+    "riskMessage": {
+      "text": "⚠️ SpendFlow 위험 알림 - 예산 80%에 도달했어요. 이번 달 예산의 84%를 사용 중이에요.",
+      "blocks": [],
+      "blocksJson": "[]"
+    }
+  },
+  "createdAt": "2026-06-29T10:05:00.000Z"
+}
+```
+
+n8n 워크플로우 구조는 기존처럼 유지할 수 있습니다.
+
+```txt
+Webhook
+├─ Slack: 기본 소비 요약 알림
+└─ If: 위험 조건 확인
+   ├─ true → Slack: 위험 소비 알림
+   └─ false → 종료
+```
+
+기본 소비 요약 Slack 노드는 Webhook payload의 `slack.summaryMessage`를 사용합니다.
+
+```txt
+text: {{$json.body.slack.summaryMessage.text}}
+blocks: {{$json.body.slack.summaryMessage.blocks}}
+```
+
+위험 소비 알림 Slack 노드는 If 노드에서 `hasRiskAlert === true`일 때만 실행하고, `slack.riskMessage`를 사용합니다.
+
+```txt
+text: {{$json.body.slack.riskMessage.text}}
+blocks: {{$json.body.slack.riskMessage.blocks}}
+```
+
+If 조건은 `{{$json.body.hasRiskAlert}} is true`를 권장합니다. 또는 `{{$json.body.severity}} equals warning OR {{$json.body.severity}} equals danger`로 설정해도 됩니다.
+
+n8n Slack 노드에서 `blocks` 배열을 직접 매핑하기 어렵다면 HTTP Request 노드로 Slack Incoming Webhook에 JSON을 POST합니다. Slack webhook URL이나 token은 코드에 하드코딩하지 말고 n8n credential 또는 환경변수로 관리합니다.
+
+```json
+{
+  "text": "{{$json.body.slack.summaryMessage.text}}",
+  "blocks": {{$json.body.slack.summaryMessage.blocksJson}}
+}
+```
+
 ## 확장 아이디어
 
 - Gmail 결제 알림 메일 자동 수집

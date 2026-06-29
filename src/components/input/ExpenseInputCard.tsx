@@ -1,59 +1,36 @@
-import { useEffect, useRef, useState } from "react";
-import { ArrowDownToLine, Save, Wand2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronDown, PenLine, Save, Sparkles } from "lucide-react";
 import { DEFAULT_PAYMENT_METHOD, EXPENSE_CATEGORIES, PAYMENT_METHODS } from "../../constants/expenses";
 import { classifyExpenseText } from "../../services/aiClassifier";
 import { useExpenseStore } from "../../store/expenseStore";
-import type { ExpenseCategory, ParsedExpenseResult, PaymentMethod } from "../../types/expense";
+import type { ExpenseCategory, PaymentMethod } from "../../types/expense";
 import { toDateKey } from "../../utils/date";
 import { createExpenseId } from "../../utils/id";
 import { Button } from "../ui/Button";
 import { GlassCard } from "../ui/GlassCard";
-import { ExpensePreviewCard } from "./ExpensePreviewCard";
-import { QuickInputChips } from "./QuickInputChips";
-import { AutomationFlowCard } from "./AutomationFlowCard";
+
+const primaryPaymentMethods = PAYMENT_METHODS.filter((method) => ["카드", "현금", "계좌이체"].includes(method));
 
 export function ExpenseInputCard() {
   const [text, setText] = useState("");
-  const [preview, setPreview] = useState<ParsedExpenseResult | null>(null);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<ExpenseCategory>("카페");
   const [memo, setMemo] = useState("");
   const [date, setDate] = useState(toDateKey(new Date()));
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(DEFAULT_PAYMENT_METHOD);
+  const [helperMessage, setHelperMessage] = useState("");
   const addExpense = useExpenseStore((state) => state.addExpense);
   const inputRef = useRef<HTMLInputElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!preview) return;
-    window.setTimeout(() => {
-      previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 80);
-  }, [preview]);
 
   const parse = async (value = text) => {
     if (!value.trim()) return;
     const result = await classifyExpenseText(value);
-    setPreview(result);
-  };
-
-  const save = async () => {
-    if (!preview || preview.amount <= 0) return;
-    await addExpense({
-      id: createExpenseId(),
-      date: preview.date,
-      merchant: preview.merchant,
-      amount: preview.amount,
-      category: preview.category,
-      paymentMethod: preview.paymentMethod ?? DEFAULT_PAYMENT_METHOD,
-      source: preview.source,
-      confidence: preview.confidence,
-      needsReview: preview.needsReview,
-      memo: preview.memo || preview.rawText,
-      createdAt: new Date().toISOString()
-    });
-    setPreview(null);
-    setText("");
+    if (result.amount > 0) setAmount(String(result.amount));
+    setCategory(result.category);
+    setPaymentMethod(primaryPaymentMethods.includes(result.paymentMethod) ? result.paymentMethod : DEFAULT_PAYMENT_METHOD);
+    setDate(result.date);
+    setMemo(result.merchant === "확인 필요" ? result.rawText : result.merchant);
+    setHelperMessage("입력값을 빠른 저장 폼에 채웠어요.");
   };
 
   const saveManualExpense = async () => {
@@ -79,22 +56,19 @@ export function ExpenseInputCard() {
     setCategory("카페");
     setPaymentMethod(DEFAULT_PAYMENT_METHOD);
     setDate(toDateKey(new Date()));
-  };
-
-  const selectQuick = (value: string) => {
-    setText(value);
-    inputRef.current?.focus();
+    setHelperMessage("");
+    setText("");
   };
 
   return (
     <div className="screen-stack">
       <GlassCard className="input-card">
         <div className="input-icon">
-          <Wand2 size={24} />
+          <PenLine size={24} />
         </div>
         <div className="input-heading">
-          <strong>소비 흐름 입력</strong>
-          <span>입력하면 홈 수위와 리포트가 바로 갱신돼요</span>
+          <strong>소비를 빠르게 기록해요</strong>
+          <span>금액과 카테고리만 선택하면 이번 달 소비 수위에 바로 반영돼요.</span>
         </div>
         <div className="manual-expense-form">
           <label htmlFor="expense-amount">금액</label>
@@ -105,60 +79,83 @@ export function ExpenseInputCard() {
             placeholder="예: 6800"
             inputMode="numeric"
           />
-          <label htmlFor="expense-category">카테고리</label>
-          <select id="expense-category" value={category} onChange={(event) => setCategory(event.target.value as ExpenseCategory)}>
-            {EXPENSE_CATEGORIES.map((item) => (
-              <option key={item} value={item}>{item}</option>
-            ))}
-          </select>
+          <fieldset className="choice-field">
+            <legend>카테고리</legend>
+            <div className="category-pill-grid">
+              {EXPENSE_CATEGORIES.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`choice-pill ${category === item ? "choice-pill-active" : ""}`}
+                  onClick={() => setCategory(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="choice-field">
+            <legend>결제수단</legend>
+            <div className="payment-pill-row">
+              {primaryPaymentMethods.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`choice-pill ${paymentMethod === item ? "choice-pill-active" : ""}`}
+                  onClick={() => setPaymentMethod(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </fieldset>
           <label htmlFor="expense-memo">메모</label>
           <input
             id="expense-memo"
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
-            placeholder="예: 스타벅스, 점심, 택시"
+            placeholder="선택 입력: 스타벅스, 점심, 택시"
           />
-          <div className="input-two-col">
-            <div>
-              <label htmlFor="expense-date">날짜</label>
-              <input id="expense-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="expense-payment">결제수단</label>
-              <select id="expense-payment" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as PaymentMethod)}>
-                {PAYMENT_METHODS.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
-            </div>
-          </div>
         </div>
+        <details className="date-helper">
+          <summary>
+            <span>오늘 날짜로 저장</span>
+            <ChevronDown size={17} />
+          </summary>
+          <label htmlFor="expense-date">날짜</label>
+          <input id="expense-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        </details>
         <Button onClick={saveManualExpense} disabled={Number(amount.replace(/[^0-9]/g, "")) <= 0 || !date}>
           <Save size={18} />
-          저장하기
+          소비 저장하기
         </Button>
-        <div className="input-divider"><span>또는 문장으로 자동 분류</span></div>
-        <label htmlFor="expense-input">소비 문장</label>
-        <input
-          id="expense-input"
-          ref={inputRef}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="예: 스타벅스 6800원"
-          inputMode="text"
-        />
-        <Button onClick={() => parse()} disabled={!text.trim()}>
-          <ArrowDownToLine size={18} />
-          흐름에 추가하기
-        </Button>
+        <details className="sentence-helper">
+          <summary>
+            <span>
+              <Sparkles size={16} />
+              문장으로 입력해보기
+            </span>
+            <ChevronDown size={17} />
+          </summary>
+          <p>스타벅스 6800원 카드처럼 적으면 입력값을 자동으로 채워줘요.</p>
+          <label htmlFor="expense-input">소비 문장</label>
+          <input
+            id="expense-input"
+            ref={inputRef}
+            value={text}
+            onChange={(event) => {
+              setText(event.target.value);
+              setHelperMessage("");
+            }}
+            placeholder="예: 스타벅스 6800원 카드"
+            inputMode="text"
+          />
+          <Button variant="secondary" onClick={() => parse()} disabled={!text.trim()}>
+            빠른 입력에 채우기
+          </Button>
+          {helperMessage ? <span className="helper-message">{helperMessage}</span> : null}
+        </details>
       </GlassCard>
-      <AutomationFlowCard />
-      <QuickInputChips onSelect={selectQuick} />
-      {preview ? (
-        <div ref={previewRef}>
-          <ExpensePreviewCard preview={preview} onSave={save} onReset={() => setPreview(null)} />
-        </div>
-      ) : null}
     </div>
   );
 }

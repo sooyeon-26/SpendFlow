@@ -782,7 +782,7 @@ button {
 .manual-expense-form {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 11px;
 }
 
 .input-two-col {
@@ -810,6 +810,142 @@ button {
   height: 1px;
   flex: 1;
   background: rgba(80, 154, 190, 0.14);
+}
+
+.choice-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.choice-field legend {
+  padding: 0;
+  color: rgba(23, 25, 57, 0.62);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.category-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.payment-pill-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.choice-pill {
+  min-height: 48px;
+  border: 0;
+  border-radius: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(23, 25, 57, 0.7);
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: inset 0 0 0 1px rgba(66, 154, 192, 0.13);
+  font-size: 14px;
+  font-weight: 820;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.choice-pill:active {
+  transform: scale(0.97);
+}
+
+.choice-pill-active {
+  color: #fff;
+  background: linear-gradient(135deg, #1ba9ec, #36d3c1);
+  box-shadow: 0 12px 24px rgba(20, 157, 224, 0.21), inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.sentence-helper {
+  border-radius: 20px;
+  padding: 13px;
+  background: rgba(255, 255, 255, 0.46);
+  box-shadow: inset 0 0 0 1px rgba(66, 154, 192, 0.1);
+}
+
+.date-helper {
+  border-radius: 18px;
+  padding: 0 2px;
+}
+
+.date-helper summary,
+.sentence-helper summary {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #1c749e;
+  font-size: 14px;
+  font-weight: 820;
+  cursor: pointer;
+  list-style: none;
+}
+
+.date-helper summary {
+  min-height: 26px;
+  color: rgba(23, 25, 57, 0.52);
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.date-helper summary::-webkit-details-marker,
+.sentence-helper summary::-webkit-details-marker {
+  display: none;
+}
+
+.sentence-helper summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sentence-helper[open] summary > svg {
+  transform: rotate(180deg);
+}
+
+.date-helper[open] summary > svg {
+  transform: rotate(180deg);
+}
+
+.date-helper label,
+.date-helper input {
+  margin-top: 9px;
+}
+
+.sentence-helper p {
+  margin: 4px 0 12px;
+  color: rgba(23, 25, 57, 0.54);
+  font-size: 12px;
+  font-weight: 690;
+  line-height: 1.45;
+}
+
+.sentence-helper label,
+.sentence-helper input,
+.sentence-helper .btn {
+  margin-top: 9px;
+}
+
+.sentence-helper .btn {
+  width: 100%;
+}
+
+.helper-message {
+  display: block;
+  margin-top: 9px;
+  color: #168968;
+  font-size: 12px;
+  font-weight: 780;
 }
 
 .btn {

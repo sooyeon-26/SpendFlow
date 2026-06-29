@@ -1,9 +1,10 @@
 import type { Budget, Expense } from "../types/expense";
-import { createSpendAlertPayloads, type SpendAlertPayload } from "../utils/spendAlerts";
+import type { ExpenseCreatedWebhookPayload } from "./slackMessages";
+import { createExpenseCreatedWebhookPayload } from "../utils/spendAlerts";
 
 const WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string | undefined;
 
-export async function sendSpendAlertWebhook(payload: SpendAlertPayload): Promise<void> {
+export async function sendSpendAlertWebhook(payload: ExpenseCreatedWebhookPayload): Promise<void> {
   if (!WEBHOOK_URL) {
     console.log("[SpendFlow webhook preview]", payload);
     return;
@@ -17,10 +18,10 @@ export async function sendSpendAlertWebhook(payload: SpendAlertPayload): Promise
 }
 
 export async function notifyExpenseCreated(expense: Expense, expenses: Expense[], budget: Budget): Promise<void> {
-  const payloads = createSpendAlertPayloads(expenses, budget, expense);
-  await Promise.all(payloads.map((payload) => sendSpendAlertWebhook(payload)));
+  const payload = createExpenseCreatedWebhookPayload(expenses, budget, expense);
+  await sendSpendAlertWebhook(payload);
 }
 
-export async function notifyBudgetRisk(payload: SpendAlertPayload): Promise<void> {
+export async function notifyBudgetRisk(payload: ExpenseCreatedWebhookPayload): Promise<void> {
   await sendSpendAlertWebhook(payload);
 }

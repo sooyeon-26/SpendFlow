@@ -1,16 +1,9 @@
 import { useRef } from "react";
 import { useExpenseStore } from "../../store/expenseStore";
 import { generateWeeklyInsights, getBudgetUsage, getCategorySummary, getRecent7DaysData, getTodaySpent, getTopCategory, getTotalSpent, getWeeklySpent } from "../../utils/analytics";
-import { createAutomationPayload } from "../../utils/createAutomationPayload";
-import { createDailyReportPayload } from "../../utils/createDailyReportPayload";
-import { createN8nDailyReportPayload } from "../../utils/createN8nDailyReportPayload";
 import { detectSpendingAlerts } from "../../utils/detectSpendingAlerts";
-import { toDateKey } from "../../utils/date";
 import { generateSpendingInsight } from "../../utils/generateSpendingInsight";
 import { AIInsightCard } from "../AIInsightCard";
-import { AutomationPayloadPreview } from "../AutomationPayloadPreview";
-import { DailyReportPreview } from "../DailyReportPreview";
-import { N8nDailyReportTestPanel } from "../N8nDailyReportTestPanel";
 import { SpendingAlertList } from "../SpendingAlertList";
 import { BudgetLevelCard } from "./BudgetLevelCard";
 import { MiniInsightCard } from "./MiniInsightCard";
@@ -35,19 +28,6 @@ export function HomeScreen() {
   };
   const alerts = detectSpendingAlerts(expenses, budget.monthlyBudget, total);
   const spendingInsight = generateSpendingInsight(spendingStatus, categorySummary, alerts, expenses);
-  const automationPayload = createAutomationPayload(alerts, spendingInsight, spendingStatus);
-  const reportDate = toDateKey(new Date());
-  const dailyReportPayload = createDailyReportPayload({
-    userId: "mock-user-1",
-    reportDate,
-    spendingStatus,
-    transactions: expenses,
-    alerts,
-    insight: spendingInsight,
-    monthlyBudget: budget.monthlyBudget,
-    currentSpent: total
-  });
-  const n8nDailyReportPayload = createN8nDailyReportPayload(dailyReportPayload);
   const scrollToDetails = () => {
     detailSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -68,9 +48,6 @@ export function HomeScreen() {
         <MiniInsightCard insight={insights[0]} />
         <AIInsightCard insight={spendingInsight} />
         <SpendingAlertList alerts={alerts} />
-        <AutomationPayloadPreview payload={automationPayload} />
-        <DailyReportPreview payload={dailyReportPayload} />
-        <N8nDailyReportTestPanel payload={n8nDailyReportPayload} />
       </section>
     </div>
   );

@@ -9,3 +9,5 @@ When implementing from a selected generated mock, treat that image as the source
 ## SpendFlow prototype decisions
 
 - First-run onboarding should render before the existing app shell and must not change the Home screen, water-level interaction, analysis cards, or bottom navigation. Completion is stored with `spendflow_onboarding_seen` in localStorage.
+- Home screen should not show raw automation payload previews or n8n test panels in the user-facing prototype; keep automation evidence in the external n8n/Slack workflow.
+- Input screen should prioritize button-based quick expense logging: amount first, category pills, payment-method pills, optional memo, and save. Natural-language/mock AI input should remain as a secondary helper that fills the quick form, not the main value proposition.

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">SpendFlow Slack app icon</title>
+  <desc id="desc">A rounded SpendFlow icon with a bold water-like spending flow and a small coin marker.</desc>
+  <defs>
+    <linearGradient id="slackBg" x1="80" y1="44" x2="434" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FEFF"/>
+      <stop offset=".45" stop-color="#DDF8FF"/>
+      <stop offset="1" stop-color="#91DCF7"/>
+    </linearGradient>
+    <linearGradient id="slackTile" x1="118" y1="86" x2="392" y2="426" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".92"/>
+      <stop offset="1" stop-color="#C9F7FF" stop-opacity=".72"/>
+    </linearGradient>
+    <linearGradient id="flowStroke" x1="168" y1="128" x2="354" y2="392" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0FC8DC"/>
+      <stop offset=".5" stop-color="#129CE7"/>
+      <stop offset="1" stop-color="#1261B8"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="304" y1="144" x2="382" y2="224" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE880"/>
+      <stop offset="1" stop-color="#FFB13B"/>
+    </linearGradient>
+    <filter id="iconShadow" x="52" y="58" width="408" height="412" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#1261B8" flood-opacity=".2"/>
+    </filter>
+    <clipPath id="tileClip">
+      <rect x="82" y="82" width="348" height="348" rx="98"/>
+    </clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="116" fill="url(#slackBg)"/>
+  <rect x="74" y="76" width="364" height="364" rx="104" fill="#FFFFFF" opacity=".42" filter="url(#iconShadow)"/>
+
+  <g clip-path="url(#tileClip)">
+    <rect x="82" y="82" width="348" height="348" rx="98" fill="url(#slackTile)"/>
+    <path d="M82 322c39-22 73-23 107-2 43 27 88 26 134-2 37-23 71-23 107 0v112H82z" fill="#19AEEB"/>
+    <path d="M82 321c39-22 73-22 107-1 43 27 88 26 134-2 37-23 71-23 107 0" fill="none" stroke="#F7FEFF" stroke-width="22" stroke-linecap="round" opacity=".96"/>
+    <path d="M185 156c73 23 105 65 60 103-42 36-11 74 82 96" fill="none" stroke="#FFFFFF" stroke-width="64" stroke-linecap="round" stroke-linejoin="round" opacity=".86"/>
+    <path d="M185 156c73 23 105 65 60 103-42 36-11 74 82 96" fill="none" stroke="url(#flowStroke)" stroke-width="39" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M188 155c36 11 62 27 75 47" fill="none" stroke="#7AE7F4" stroke-width="12" stroke-linecap="round" opacity=".9"/>
+    <circle cx="346" cy="184" r="43" fill="url(#coin)"/>
+    <circle cx="346" cy="184" r="24" fill="none" stroke="#FFF8D7" stroke-width="8" opacity=".85"/>
+    <path d="M346 153v62" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" opacity=".88"/>
+  </g>
+
+  <rect x="93" y="93" width="326" height="326" rx="90" fill="none" stroke="#FFFFFF" stroke-width="16" opacity=".55"/>
+</svg>

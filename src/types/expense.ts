@@ -1,4 +1,4 @@
-export type ExpenseCategory = "식비" | "카페" | "교통" | "쇼핑" | "구독" | "생활" | "기타";
+export type ExpenseCategory = "카페" | "식비" | "교통" | "쇼핑" | "구독" | "생활" | "문화" | "기타";
 
 export type PaymentMethod = "카드" | "현금" | "계좌이체" | "간편결제" | "기타";
 

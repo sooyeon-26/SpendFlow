@@ -1,4 +1,13 @@
 import type { Budget, Expense } from "../types/expense";
+import {
+  createSlackRiskMessage,
+  createSlackSummaryMessage,
+  getActionSuggestion,
+  getRiskLabel,
+  type AlertType,
+  type ExpenseCreatedWebhookPayload,
+  type Severity
+} from "../services/slackMessages";
 import { formatWon } from "./format";
 import { getBudgetUsage, getDaySpent, getMonthlySpent, getRemainingBudget, getTopCategory } from "./analytics";
 
@@ -63,3 +72,84 @@ export function createSpendAlertPayloads(expenses: Expense[], budget: Budget, la
   return payloads;
 }
 
+export function createExpenseCreatedWebhookPayload(expenses: Expense[], budget: Budget, latestExpense: Expense): ExpenseCreatedWebhookPayload {
+  const monthlySpent = getMonthlySpent(expenses);
+  const usageRate = Math.round(getBudgetUsage(monthlySpent, budget.monthlyBudget));
+  const remainingBudget = getRemainingBudget(expenses, budget.monthlyBudget);
+  const dailySpent = getDaySpent(expenses, latestExpense.date);
+  const alertType = getPrimaryAlertType(usageRate, dailySpent);
+  const severity = getSeverity(alertType);
+  const hasRiskAlert = alertType !== null;
+  const summary = {
+    monthlyBudget: budget.monthlyBudget,
+    monthlySpent,
+    remainingBudget,
+    usageRate,
+    dailySpent
+  };
+  const createdAt = new Date().toISOString();
+  const message = createRiskMessage(alertType, summary);
+  const basePayload: ExpenseCreatedWebhookPayload = {
+    app: "SpendFlow",
+    event: "expense_created",
+    hasRiskAlert,
+    alertType,
+    severity,
+    title: hasRiskAlert ? "⚠️ SpendFlow 위험 알림" : "💧 SpendFlow 소비 요약",
+    message,
+    actionSuggestion: getActionSuggestion(alertType, summary, latestExpense),
+    expense: {
+      amount: latestExpense.amount,
+      category: latestExpense.category,
+      paymentMethod: latestExpense.paymentMethod,
+      memo: latestExpense.memo
+    },
+    summary,
+    slack: {
+      summaryMessage: {
+        text: "",
+        blocks: [],
+        blocksJson: "[]"
+      },
+      riskMessage: null
+    },
+    createdAt
+  };
+
+  return {
+    ...basePayload,
+    slack: {
+      summaryMessage: createSlackSummaryMessage(basePayload),
+      riskMessage: createSlackRiskMessage(basePayload)
+    }
+  };
+}
+
+function getPrimaryAlertType(usageRate: number, dailySpent: number): AlertType {
+  if (usageRate >= 100) return "budget_exceeded";
+  if (usageRate >= 80) return "budget_warning";
+  if (dailySpent >= 50000) return "daily_spending_warning";
+  return null;
+}
+
+function getSeverity(alertType: AlertType): Severity {
+  if (alertType === "budget_exceeded") return "danger";
+  if (alertType === "budget_warning" || alertType === "daily_spending_warning") return "warning";
+  return "normal";
+}
+
+function createRiskMessage(alertType: AlertType, summary: ExpenseCreatedWebhookPayload["summary"]): string {
+  if (alertType === "budget_exceeded") {
+    return `이번 달 예산의 ${Math.round(summary.usageRate)}%를 사용 중이에요.`;
+  }
+
+  if (alertType === "budget_warning") {
+    return `이번 달 예산의 ${Math.round(summary.usageRate)}%를 사용 중이에요.`;
+  }
+
+  if (alertType === "daily_spending_warning") {
+    return `오늘만 ${formatWon(summary.dailySpent)}을 사용했어요.`;
+  }
+
+  return getRiskLabel(alertType);
+}
