@@ -2,11 +2,19 @@
 
 소비 내역과 월 예산을 물의 수위로 보여주는 모바일 우선 가계부입니다. 금액을 직접 기록하거나 `스타벅스 6800원 카드`처럼 문장으로 입력할 수 있습니다.
 
-## 만든 이유
+[배포된 데모 보기](https://spend-flow-eight.vercel.app/)
+
+![SpendFlow 월 예산 사용률과 물 수위 화면](docs/preview.png)
+
+## 문제
 
 가계부의 숫자만 보고는 현재 소비 속도를 바로 체감하기 어려웠습니다. SpendFlow는 이번 달 지출을 수위로 표현하고, 예산에 가까워질수록 경고와 다음 행동을 함께 보여주도록 만들었습니다.
 
-## 현재 동작하는 범위
+## 해결 방식
+
+소비 입력을 `localStorage`에 저장하고 월 예산 사용률을 물의 높이와 상태 문구로 바꿨습니다. 위험 조건 계산과 알림 전송을 분리해 n8n을 설정하지 않아도 화면의 예산 판단은 독립적으로 동작합니다.
+
+## 주요 기능
 
 - 금액·카테고리·결제수단·메모를 직접 입력
 - 문장에서 금액, 가맹점, 카테고리, 결제수단을 규칙으로 추출
@@ -81,6 +89,13 @@ npm test
 npm run build
 npm audit --omit=dev
 ```
+
+## 배포
+
+- Production: [spend-flow-eight.vercel.app](https://spend-flow-eight.vercel.app/)
+- Vite 정적 앱과 `/api/spend-alert`, `/api/daily-report` Vercel Functions를 함께 배포합니다.
+- n8n 자동화는 기본적으로 꺼져 있으며 환경변수를 설정한 경우에만 동작합니다.
+- 소비 데이터는 배포 서버가 아니라 사용 중인 브라우저의 `localStorage`에 남습니다.
 
 ## 선택 기능: n8n 자동화
 
