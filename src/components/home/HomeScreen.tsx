@@ -3,7 +3,7 @@ import { useExpenseStore } from "../../store/expenseStore";
 import { generateWeeklyInsights, getBudgetUsage, getCategorySummary, getRecent7DaysData, getTodaySpent, getTopCategory, getTotalSpent, getWeeklySpent } from "../../utils/analytics";
 import { detectSpendingAlerts } from "../../utils/detectSpendingAlerts";
 import { generateSpendingInsight } from "../../utils/generateSpendingInsight";
-import { AIInsightCard } from "../AIInsightCard";
+import { SpendingInsightCard } from "../SpendingInsightCard";
 import { SpendingAlertList } from "../SpendingAlertList";
 import { BudgetLevelCard } from "./BudgetLevelCard";
 import { MiniInsightCard } from "./MiniInsightCard";
@@ -46,7 +46,7 @@ export function HomeScreen() {
         <HomeReportSection expenses={expenses} budget={budget} />
         <SpendingFlowChart data={getRecent7DaysData(expenses)} />
         <MiniInsightCard insight={insights[0]} />
-        <AIInsightCard insight={spendingInsight} />
+        <SpendingInsightCard insight={spendingInsight} />
         <SpendingAlertList alerts={alerts} />
       </section>
     </div>

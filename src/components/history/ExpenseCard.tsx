@@ -23,7 +23,7 @@ export function ExpenseCard({ expense, onDelete }: ExpenseCardProps) {
         <div className="expense-meta">
           <Badge tone="neutral" className={`category-badge category-${expense.category}`}>{expense.category}</Badge>
           <span>{expense.paymentMethod}</span>
-          {expense.source === "mock-ai" ? <span>자동 분류</span> : null}
+          {expense.source === "rule-based" ? <span>규칙 분류</span> : null}
         </div>
       </div>
       <div className="expense-side">

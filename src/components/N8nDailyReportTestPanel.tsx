@@ -7,19 +7,19 @@ import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
 import { GlassCard } from "./ui/GlassCard";
 
-type SendState = "idle" | "sending" | "success" | "failed" | "missing-url";
+type SendState = "idle" | "sending" | "success" | "failed" | "disabled";
 
 function getStatusLabel(state: SendState): string {
   if (state === "sending") return "전송 중";
   if (state === "success") return "전송 성공";
   if (state === "failed") return "전송 실패";
-  if (state === "missing-url") return "Webhook URL 없음";
+  if (state === "disabled") return "자동화 꺼짐";
   return "대기 중";
 }
 
 function getBadgeTone(state: SendState): "aqua" | "warning" | "danger" | "neutral" {
   if (state === "success") return "aqua";
-  if (state === "missing-url") return "warning";
+  if (state === "disabled") return "warning";
   if (state === "failed") return "danger";
   return "neutral";
 }
@@ -40,7 +40,7 @@ export function N8nDailyReportTestPanel({ payload }: { payload: N8nDailyReportPa
       return;
     }
 
-    setSendState(result.reason === "NO_WEBHOOK_URL" ? "missing-url" : "failed");
+    setSendState(result.reason === "AUTOMATION_DISABLED" ? "disabled" : "failed");
   };
 
   return (

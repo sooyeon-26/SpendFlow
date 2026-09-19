@@ -1,6 +1,6 @@
 import type { N8nDailyReportPayload } from "./createN8nDailyReportPayload";
 
-const WEBHOOK_URL = import.meta.env.VITE_N8N_DAILY_REPORT_WEBHOOK_URL as string | undefined;
+const DAILY_REPORTS_ENABLED = import.meta.env.VITE_ENABLE_DAILY_REPORTS === "true";
 
 export type N8nDailyReportWebhookResult =
   | {
@@ -11,21 +11,21 @@ export type N8nDailyReportWebhookResult =
   | {
       ok: false;
       status?: number;
-      reason: "NO_WEBHOOK_URL" | "REQUEST_FAILED";
+      reason: "AUTOMATION_DISABLED" | "REQUEST_FAILED";
       message: string;
     };
 
 export async function sendN8nDailyReportWebhook(payload: N8nDailyReportPayload): Promise<N8nDailyReportWebhookResult> {
-  if (!WEBHOOK_URL) {
+  if (!DAILY_REPORTS_ENABLED) {
     return {
       ok: false,
-      reason: "NO_WEBHOOK_URL",
-      message: "n8n Webhook URL이 설정되지 않았어요."
+      reason: "AUTOMATION_DISABLED",
+      message: "데일리 리포트 자동화가 비활성화되어 있어요."
     };
   }
 
   try {
-    const response = await fetch(WEBHOOK_URL, {
+    const response = await fetch("/api/daily-report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { ChevronDown, PenLine, Save, Sparkles } from "lucide-react";
 import { DEFAULT_PAYMENT_METHOD, EXPENSE_CATEGORIES, PAYMENT_METHODS } from "../../constants/expenses";
-import { classifyExpenseText } from "../../services/aiClassifier";
+import { classifyExpenseText } from "../../services/expenseClassifier";
 import { useExpenseStore } from "../../store/expenseStore";
 import type { ExpenseCategory, PaymentMethod } from "../../types/expense";
 import { toDateKey } from "../../utils/date";

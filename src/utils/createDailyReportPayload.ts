@@ -70,7 +70,7 @@ function createNotificationBody(payload: {
     "감지된 소비 위험:",
     ...payload.alerts.map((alert) => `- ${alert.message}`),
     "",
-    "AI 소비 인사이트:",
+    "소비 흐름 요약:",
     payload.insight.summary,
     payload.insight.suggestion
   ].join("\n");

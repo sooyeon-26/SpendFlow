@@ -1,349 +1,104 @@
 # SpendFlow
 
-SpendFlow는 소비 데이터를 자동으로 입력, 분류, 분석하고 예산 사용률을 물의 수위로 시각화하는 iPhone 최적화 PWA입니다.
+소비 내역과 월 예산을 물의 수위로 보여주는 모바일 우선 가계부입니다. 금액을 직접 기록하거나 `스타벅스 6800원 카드`처럼 문장으로 입력할 수 있습니다.
 
-## 문제 정의
+## 만든 이유
 
-일반 가계부는 사용자가 매번 소비를 입력하고 카테고리를 고르며 예산 초과 여부를 직접 확인해야 합니다. SpendFlow는 이 흐름을 자동화해 소비가 물처럼 쌓이고, 특정 수위에 가까워지면 사용자가 빠르게 알아차릴 수 있게 합니다.
+가계부의 숫자만 보고는 현재 소비 속도를 바로 체감하기 어려웠습니다. SpendFlow는 이번 달 지출을 수위로 표현하고, 예산에 가까워질수록 경고와 다음 행동을 함께 보여주도록 만들었습니다.
 
-## 모바일 앱 컨셉
+## 현재 동작하는 범위
 
-- 기준 화면: iPhone 14 Pro, 393px x 852px
-- 구조: 홈, 입력, 내역, 리포트 하단 탭
-- UI: glass card, light blue gradient, wave progress, calm water motion
-- 데스크탑에서는 가운데 iPhone 앱 프레임처럼 보이고, 모바일에서는 전체 화면을 사용합니다.
+- 금액·카테고리·결제수단·메모를 직접 입력
+- 문장에서 금액, 가맹점, 카테고리, 결제수단을 규칙으로 추출
+- `localStorage`에 소비 내역 저장·수정·삭제
+- 월·주·일 소비액과 카테고리별 비중 계산
+- 월 예산 사용률을 물결 형태로 시각화
+- 최근 7일 흐름, 반복 소비, 예산 위험 구간 요약
+- 모바일 홈 화면 추가를 위한 PWA manifest와 safe area 대응
+- 선택적으로 n8n에 소비 경고와 데일리 리포트 전달
 
-## 핵심 기능
+문장 분류와 소비 코멘트는 외부 AI 모델을 호출하지 않습니다. 키워드와 금액 구간을 이용한 규칙 기반 기능입니다.
 
-- 소비 문장 입력과 mock AI 자동 분류
-- 파싱 결과 미리보기와 저장
-- localStorage 기반 소비 내역 유지
-- 소비 내역 삭제와 카테고리 필터
-- 월 총 소비, 오늘 소비, 이번 주 소비 계산
-- 예산 수위 wave progress
-- 최근 7일 소비 흐름 차트
-- 주간 리포트, 반복 소비 감지, 위험 수위 카테고리 표시
-- 모바일 토스트와 하단 탭바
-- PWA 기본 manifest와 iPhone 메타 태그
+## 데이터 흐름
 
-## 2단계 개발 내용
-
-- PWA manifest 보강
-- iPhone 홈 화면 추가 지원
-- PNG 앱 아이콘과 Apple touch icon 적용
-- standalone 모드 대응 유틸 추가
-- iPhone safe area와 하단 탭바 여백 최적화
-- 실제 iPhone 테스트와 포트폴리오 캡처 방법 정리
-
-## 자동화 플로우
-
-현재:
-
-```txt
-컴포넌트
-→ Zustand store
-→ expenseRepository
-→ localStorage
+```text
+입력 화면
+  → Zustand store
+  → expenseRepository
+  → localStorage
+  → 통계·경고 계산
+  → 홈과 리포트 화면
 ```
 
-향후:
+자동화를 켠 경우에는 브라우저가 같은 출처의 서버 함수에 요청하고, 서버 함수가 n8n Webhook을 호출합니다. 실제 Webhook 주소는 브라우저 번들에 포함되지 않습니다.
 
-```txt
-컴포넌트
-→ Zustand store
-→ expenseRepository
-→ Supabase/Firebase/API
+```text
+브라우저
+  → /api/spend-alert 또는 /api/daily-report
+  → 서버 환경변수의 n8n Webhook
 ```
 
-새 소비 저장 흐름은 아래 확장을 염두에 두고 분리되어 있습니다.
+## 기술 선택
 
-```txt
-소비 저장
-→ addExpense()
-→ notifyExpenseCreated(expense, expenses, budget)
-→ sendSpendAlertWebhook(payload)
-→ 예산 위험 알림 / 주간 리포트 자동화
-```
+| 구분 | 사용 기술 | 이유 |
+| --- | --- | --- |
+| UI | React, TypeScript, Tailwind CSS | 모바일 화면을 컴포넌트 단위로 구성 |
+| 상태 | Zustand | 입력·내역·예산 상태를 가볍게 공유 |
+| 저장 | localStorage | 로그인 없이 바로 사용할 수 있는 MVP 구성 |
+| Build | Vite | 빠른 개발 서버와 정적 빌드 |
+| Automation | Vercel Functions, n8n | 비밀 URL을 클라이언트에서 분리한 선택 기능 |
+| Test | Vitest | 문장 파싱과 예산 경고 규칙 검증 |
 
-`VITE_N8N_WEBHOOK_URL`이 설정되어 있으면 조건 충족 시 webhook으로 payload를 전송합니다. URL이 없으면 개발 중 확인하기 쉽도록 콘솔에 payload를 출력합니다.
+## 구현하면서 신경 쓴 점
 
-현재 알림 조건:
+### 직접 입력이 기본 흐름
 
-- 월 예산 80% 이상 도달
-- 월 예산 100% 이상 초과
-- 하루 소비 50,000원 이상
+금액과 카테고리를 먼저 보이게 두고 문장 입력은 보조 기능으로 배치했습니다. 규칙 분류 결과는 저장 전에 사용자가 수정할 수 있습니다.
 
-## 기술 스택
+### 예산 경고의 기준을 코드로 분리
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- Zustand
-- localStorage
-- PWA manifest
+월 예산 80%, 예산 초과, 하루 5만 원 이상 사용을 각각 판정합니다. 화면용 문구와 자동화 payload가 같은 계산 결과를 사용하도록 유틸 함수로 분리했습니다.
 
-## 폴더 구조
+### Webhook 주소를 공개하지 않기
 
-```txt
-src/
-  app/
-  components/
-    layout/
-    home/
-    input/
-    history/
-    report/
-    ui/
-  store/
-  services/
-  utils/
-  types/
-  data/
-  styles/
-```
+`VITE_`로 시작하는 환경변수는 빌드 결과에 포함됩니다. 따라서 공개 설정에는 기능 활성화 여부만 두고, 실제 n8n 주소는 서버 전용 환경변수로 관리합니다.
 
-## 실행 방법
+## 로컬 실행
+
+Node.js 20 이상이 필요합니다.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite dev server는 외부 기기 접속을 위해 기본적으로 `--host 0.0.0.0`으로 실행됩니다.
+브라우저에서는 터미널에 표시된 `http://localhost:5173` 주소로 접속합니다. 같은 Wi-Fi의 휴대전화에서 확인하려면 출력된 Network 주소를 사용합니다.
 
-로컬 네트워크 테스트를 명시적으로 실행하려면 아래 명령을 사용합니다.
-
-```bash
-npm run dev -- --host 0.0.0.0
-```
-
-## iPhone 실제 테스트 방법
-
-1. 개발 PC와 iPhone을 같은 Wi-Fi에 연결합니다.
-2. 개발 PC의 로컬 IP 주소를 확인합니다.
-
-macOS/Linux:
+## 테스트와 빌드
 
 ```bash
-ifconfig
+npm test
+npm run build
+npm audit --omit=dev
 ```
 
-또는:
+## 선택 기능: n8n 자동화
 
-```bash
-ip addr
+자동화는 기본적으로 꺼져 있습니다. 배포 환경에 아래 값을 설정하면 서버 함수를 통해 전송됩니다.
+
+```dotenv
+VITE_ENABLE_SPEND_ALERTS=true
+VITE_ENABLE_DAILY_REPORTS=true
+N8N_SPEND_ALERT_WEBHOOK_URL=https://example.n8n.cloud/webhook/...
+N8N_DAILY_REPORT_WEBHOOK_URL=https://example.n8n.cloud/webhook/...
 ```
 
-Windows:
+`N8N_` 주소는 서버 환경변수로만 등록해야 하며 저장소나 `VITE_` 변수에 넣지 않습니다.
 
-```bash
-ipconfig
-```
+## 현재 한계
 
-3. 서버를 실행합니다.
-
-```bash
-npm run dev -- --host 0.0.0.0
-```
-
-4. 터미널에 표시되는 Network 주소를 iPhone Safari에서 엽니다.
-
-```txt
-http://192.168.0.12:5173
-```
-
-## 터널 테스트
-
-같은 Wi-Fi 연결이 어렵거나 외부에서 테스트해야 하면 아래 중 하나를 사용할 수 있습니다.
-
-```bash
-npx localtunnel --port 5173
-```
-
-또는:
-
-```bash
-cloudflared tunnel --url http://localhost:5173
-```
-
-터널 URL을 iPhone Safari에서 열면 실제 폰에서 테스트할 수 있습니다.
-
-## PWA 설정
-
-`public/manifest.json`과 `index.html`의 iPhone 메타 태그를 포함했습니다. `theme_color`, `display: standalone`, `orientation: portrait`, safe area 대응 CSS가 적용되어 홈 화면 추가 테스트를 할 수 있습니다.
-
-PWA 관련 파일 구조:
-
-```txt
-public/
-  manifest.json
-  icons/
-    icon-192.png
-    icon-512.png
-    maskable-512.png
-    apple-touch-icon.png
-
-src/
-  utils/
-    pwa.ts
-```
-
-## iPhone PWA 캡처 방법
-
-주소창 없는 앱 화면으로 테스트하거나 캡처하려면 아래 순서로 진행합니다.
-
-1. iPhone Safari에서 SpendFlow Network 주소를 엽니다.
-2. Safari 하단 공유 버튼을 누릅니다.
-3. “홈 화면에 추가”를 선택합니다.
-4. 홈 화면에 생성된 SpendFlow 아이콘을 실행합니다.
-5. 주소창 없는 standalone 화면에서 레이아웃, safe area, 스크롤, 캡처 상태를 확인합니다.
-
-포트폴리오용 화면 캡처는 Safari 주소창이 보이는 일반 브라우저 화면보다, 홈 화면에 추가한 PWA standalone 모드에서 촬영하는 것을 권장합니다.
-
-이 방식은 주소창 없이 실제 앱처럼 보이고, 하단 탭바와 safe area가 자연스럽게 보여 iPhone 앱 형태의 포트폴리오 이미지로 사용하기 좋습니다.
-
-## localStorage 사용 이유
-
-이번 MVP는 백엔드 없이 실제 iPhone Safari에서 빠르게 소비 입력, 저장, 삭제, 분석, 리포트 기능을 검증하기 위해 `localStorage`를 사용합니다. 저장 key는 `spendflow_expenses`입니다.
-
-## 향후 DB 확장 계획
-
-- Supabase: 사용자 로그인, 소비 데이터 저장, n8n 연동에 적합
-- Firebase: 빠른 모바일 앱 프로토타입과 여러 기기 동기화에 적합
-
-컴포넌트와 화면 코드는 유지하고 `src/services/expenseRepository.ts` 내부를 Supabase/Firebase/API 구현으로 교체하는 방식으로 확장합니다.
-
-## 향후 Dify 연동 계획
-
-현재 `src/services/aiClassifier.ts`는 mock parser인 `parseExpenseText`를 호출합니다. 향후 Dify API를 연결해 소비 문장 분류, 카테고리 추론, 신뢰도 계산, 절약 코멘트 생성을 처리하고 실패 시 mock parser로 fallback할 수 있습니다.
-
-## 향후 n8n Webhook 연동 계획
-
-현재 `src/services/automationWebhook.ts`는 `VITE_N8N_WEBHOOK_URL` 기반으로 n8n Webhook 전송을 준비합니다. 새 소비 저장 시 예산 80% 도달, 예산 초과, 하루 50,000원 이상 소비 조건을 평가하고, URL이 없으면 payload를 콘솔에서 미리 볼 수 있습니다.
-
-## n8n Slack 알림 payload
-
-새 소비가 저장되면 SpendFlow는 n8n Webhook으로 `expense_created` payload를 1회 전송합니다. payload 안에는 기본 소비 요약용 `slack.summaryMessage`가 항상 포함되고, 위험 조건이 감지되면 `slack.riskMessage`가 함께 포함됩니다.
-
-```json
-{
-  "app": "SpendFlow",
-  "event": "expense_created",
-  "hasRiskAlert": false,
-  "alertType": null,
-  "severity": "normal",
-  "title": "💧 SpendFlow 소비 요약",
-  "message": "소비 흐름이 안정적이에요.",
-  "actionSuggestion": "현재 흐름은 안정적이에요. 오늘의 소비 기록을 기준으로 예산 수위를 계속 확인할게요.",
-  "expense": {
-    "amount": 6800,
-    "category": "카페",
-    "paymentMethod": "카드",
-    "memo": "아이스라떼"
-  },
-  "summary": {
-    "monthlyBudget": 500000,
-    "monthlySpent": 260000,
-    "remainingBudget": 240000,
-    "usageRate": 52,
-    "dailySpent": 6800
-  },
-  "slack": {
-    "summaryMessage": {
-      "text": "💧 SpendFlow 소비 요약 - 최근 소비 6,800원 · 카페 · 카드, 이번 달 260,000원 / 500,000원 (52%)",
-      "blocks": [],
-      "blocksJson": "[]"
-    },
-    "riskMessage": null
-  },
-  "createdAt": "2026-06-29T10:00:00.000Z"
-}
-```
-
-위험 조건이 감지된 payload 예시는 아래와 같습니다.
-
-```json
-{
-  "app": "SpendFlow",
-  "event": "expense_created",
-  "hasRiskAlert": true,
-  "alertType": "budget_warning",
-  "severity": "warning",
-  "title": "⚠️ SpendFlow 위험 알림",
-  "message": "이번 달 예산의 84%를 사용 중이에요.",
-  "actionSuggestion": "이번 달 예산의 84%를 사용 중이에요. 이번 주에는 쇼핑 지출을 1~2회 줄이면 예산 안에서 관리하기 쉬워요.",
-  "expense": {
-    "amount": 42000,
-    "category": "쇼핑",
-    "paymentMethod": "간편결제",
-    "memo": "생활용품"
-  },
-  "summary": {
-    "monthlyBudget": 500000,
-    "monthlySpent": 420000,
-    "remainingBudget": 80000,
-    "usageRate": 84,
-    "dailySpent": 42000
-  },
-  "slack": {
-    "summaryMessage": {
-      "text": "💧 SpendFlow 소비 요약 - 최근 소비 42,000원 · 쇼핑 · 간편결제, 이번 달 420,000원 / 500,000원 (84%)",
-      "blocks": [],
-      "blocksJson": "[]"
-    },
-    "riskMessage": {
-      "text": "⚠️ SpendFlow 위험 알림 - 예산 80%에 도달했어요. 이번 달 예산의 84%를 사용 중이에요.",
-      "blocks": [],
-      "blocksJson": "[]"
-    }
-  },
-  "createdAt": "2026-06-29T10:05:00.000Z"
-}
-```
-
-n8n 워크플로우 구조는 기존처럼 유지할 수 있습니다.
-
-```txt
-Webhook
-├─ Slack: 기본 소비 요약 알림
-└─ If: 위험 조건 확인
-   ├─ true → Slack: 위험 소비 알림
-   └─ false → 종료
-```
-
-기본 소비 요약 Slack 노드는 Webhook payload의 `slack.summaryMessage`를 사용합니다.
-
-```txt
-text: {{$json.body.slack.summaryMessage.text}}
-blocks: {{$json.body.slack.summaryMessage.blocks}}
-```
-
-위험 소비 알림 Slack 노드는 If 노드에서 `hasRiskAlert === true`일 때만 실행하고, `slack.riskMessage`를 사용합니다.
-
-```txt
-text: {{$json.body.slack.riskMessage.text}}
-blocks: {{$json.body.slack.riskMessage.blocks}}
-```
-
-If 조건은 `{{$json.body.hasRiskAlert}} is true`를 권장합니다. 또는 `{{$json.body.severity}} equals warning OR {{$json.body.severity}} equals danger`로 설정해도 됩니다.
-
-n8n Slack 노드에서 `blocks` 배열을 직접 매핑하기 어렵다면 HTTP Request 노드로 Slack Incoming Webhook에 JSON을 POST합니다. Slack webhook URL이나 token은 코드에 하드코딩하지 말고 n8n credential 또는 환경변수로 관리합니다.
-
-```json
-{
-  "text": "{{$json.body.slack.summaryMessage.text}}",
-  "blocks": {{$json.body.slack.summaryMessage.blocksJson}}
-}
-```
-
-## 확장 아이디어
-
-- Gmail 결제 알림 메일 자동 수집
-- 영수증 OCR
-- Notion/Google Sheets 자동 리포트 저장
-- Slack/Telegram 주간 리포트 발송
-- 모바일 푸시 알림
-- Supabase DB 연결
-- 사용자 로그인
-- 여러 기기 간 데이터 동기화
+- 데이터가 한 브라우저의 `localStorage`에 저장되어 기기 간 동기화와 로그인은 지원하지 않습니다.
+- 문장 입력은 정해진 키워드와 숫자 패턴을 이용하므로 새로운 상호명이나 복잡한 문장을 잘못 분류할 수 있습니다.
+- PWA manifest는 포함되어 있지만 오프라인 캐시를 담당하는 service worker는 아직 없습니다.
+- n8n 자동화는 배포 환경에 서버 함수와 환경변수를 설정한 경우에만 동작합니다.
+- 자동화 서버 함수에는 사용자 인증과 요청 제한이 없으므로 공개 서비스에서는 기본 비활성 상태를 유지하거나 인증 계층을 추가해야 합니다.

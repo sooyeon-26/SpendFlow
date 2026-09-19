@@ -16,11 +16,11 @@ const badgeTone: Record<SpendingInsight["tone"], "aqua" | "warning" | "danger" |
   danger: "danger"
 };
 
-export function AIInsightCard({ insight }: { insight: SpendingInsight }) {
+export function SpendingInsightCard({ insight }: { insight: SpendingInsight }) {
   return (
     <GlassCard className="report-card">
       <div className="card-heading">
-        <h2>AI 소비 인사이트</h2>
+        <h2>소비 흐름 요약</h2>
         <Badge tone={badgeTone[insight.tone]}>{toneLabel[insight.tone]}</Badge>
       </div>
       <div className="ai-copy">

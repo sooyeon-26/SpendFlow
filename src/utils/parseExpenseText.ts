@@ -71,7 +71,7 @@ export function parseExpenseText(text: string): ParsedExpenseResult {
     amount,
     category,
     paymentMethod,
-    source: "mock-ai",
+    source: "rule-based",
     confidence,
     needsReview: confidence < 0.8,
     memo: text

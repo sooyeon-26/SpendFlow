@@ -9,7 +9,7 @@ export type Expense = {
   amount: number;
   category: ExpenseCategory;
   paymentMethod: PaymentMethod;
-  source: "manual" | "mock-ai";
+  source: "manual" | "rule-based";
   confidence: number;
   needsReview: boolean;
   memo: string;

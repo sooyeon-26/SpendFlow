@@ -11,7 +11,7 @@ function expense(days: number, merchant: string, amount: number, category: Expen
     amount,
     category,
     paymentMethod: DEFAULT_PAYMENT_METHOD,
-    source: "mock-ai",
+    source: "rule-based",
     confidence,
     needsReview: confidence < 0.8,
     memo: merchant,

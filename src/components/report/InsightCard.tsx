@@ -5,7 +5,7 @@ export function InsightCard({ insights, repeats }: { insights: string[]; repeats
   return (
     <GlassCard className="report-card">
       <div className="card-heading">
-        <h2>AI 코멘트 mock</h2>
+        <h2>소비 패턴 코멘트</h2>
         <Bot size={18} />
       </div>
       <div className="ai-copy">
