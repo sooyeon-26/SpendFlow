@@ -1,6 +1,8 @@
 import { useExpenseStore } from "../../store/expenseStore";
-import { detectRepeatedSpending, generateWeeklyInsights, getPreviousWeeklySpent, getRiskCategories, getWeeklySpent, getWeeklyTopCategories, getRecent7DaysData } from "../../utils/analytics";
+import { detectRepeatedSpending, generateWeeklyInsights, getPreviousWeeklySpent, getRiskCategories, getWeeklySpent, getWeeklyTopCategories, getRecent7DaysData, getTotalSpent } from "../../utils/analytics";
 import { SpendingFlowChart } from "../home/SpendingFlowChart";
+import { SpendingAlertList } from "../SpendingAlertList";
+import { detectSpendingAlerts } from "../../utils/detectSpendingAlerts";
 import { InsightCard } from "./InsightCard";
 import { RiskCategoryCard } from "./RiskCategoryCard";
 import { TopCategoryCard } from "./TopCategoryCard";
@@ -13,6 +15,7 @@ export function ReportScreen() {
   const budget = useExpenseStore((state) => state.budget);
   const weekly = getWeeklySpent(expenses);
   const topRows = getWeeklyTopCategories(expenses);
+  const alerts = detectSpendingAlerts(expenses, budget.monthlyBudget, getTotalSpent(expenses));
 
   return (
     <div className="screen-stack">
@@ -20,6 +23,7 @@ export function ReportScreen() {
       <SpendingFlowChart data={getRecent7DaysData(expenses)} />
       <TopCategoryCard rows={topRows} />
       <RiskCategoryCard risks={getRiskCategories(expenses, budget)} />
+      {alerts.length > 0 && <SpendingAlertList alerts={alerts} />}
       <InsightCard insights={generateWeeklyInsights(expenses, budget)} repeats={detectRepeatedSpending(expenses)} />
       <NextActionCard expenses={expenses} budget={budget} />
       <PwaInstallCard />
