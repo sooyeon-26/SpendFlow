@@ -72,6 +72,16 @@ button {
   background: var(--app-water-bg);
 }
 
+.device-presentation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: min(100%, var(--phone-width));
+}
+
+.page-shell-app { --app-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - var(--demo-height)); }
+
 .device-screen {
   width: 100%;
   height: 100%;
@@ -166,8 +176,8 @@ button {
 }
 
 .home-hero {
-  height: calc(var(--app-height) - var(--tab-height) - var(--demo-height));
-  min-height: calc(var(--app-height) - var(--tab-height) - var(--demo-height));
+  height: calc(var(--app-height) - var(--tab-height));
+  min-height: calc(var(--app-height) - var(--tab-height));
   display: flex;
   align-items: stretch;
   position: relative;
@@ -280,7 +290,7 @@ button {
   position: absolute;
   z-index: 7;
   left: 50%;
-  top: calc(var(--app-height) - var(--tab-height) - var(--demo-height) - 64px);
+  top: calc(var(--app-height) - var(--tab-height) - 64px);
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -1588,15 +1598,19 @@ button {
 /* Desktop presentation is independent of viewport-width breakpoints. */
 .page-shell-device {
   --app-height: var(--phone-height);
-  --device-width: min(393px, calc(100vw - 32px), max(280px, calc((100dvh - 56px) * 393 / 852)));
+  --device-width: min(393px, calc(100vw - 32px), max(280px, calc((100dvh - 108px) * 393 / 852)));
   padding: 24px 12px;
   overflow: auto;
   background: #eef3f6;
 }
+.page-shell-device .device-presentation {
+  width: calc(var(--device-width) + 6px);
+  gap: 12px;
+  margin: auto;
+}
 .page-shell-device .device-frame {
   box-sizing: content-box;
   flex-shrink: 0;
-  margin: auto 0;
   overflow: clip;
   width: var(--device-width);
   height: auto;
@@ -1848,7 +1862,8 @@ button {
   }
 }
 
-.demo-bar { position: relative; z-index: 12; display: flex; align-items: center; gap: 10px; flex-shrink: 0; height: var(--demo-height); padding: 0 16px; border-bottom: 1px solid #d6edf2; background: #f5fcff; color: #34596b; font-size: 12px; }
+.demo-bar { position: relative; z-index: 12; display: flex; align-items: center; gap: 10px; flex-shrink: 0; width: 100%; height: var(--demo-height); padding: 0 12px; border-bottom: 1px solid #d6edf2; background: #f5fcff; color: #34596b; font-size: 12px; }
+.page-shell-device .demo-bar { padding: 0 4px; border: 0; background: transparent; }
 .demo-bar > span { font-weight: 700; margin-right: auto; }
 .demo-bar button, .demo-bar a { display: inline-flex; align-items: center; min-height: 36px; border: 0; background: none; padding: 0 2px; color: #176181; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .wave-hint { position: absolute; z-index: 4; bottom: 108px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); padding: 9px 12px; margin: 0; border-radius: 16px; background: #ffffffde; color: #286477; font-size: 13px; pointer-events: none; }

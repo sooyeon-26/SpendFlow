@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type PropsWithChildren } from "react";
+import { DemoBar } from "./DemoBar";
 
 export function DeviceFrame({ children }: PropsWithChildren) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -24,9 +25,12 @@ export function DeviceFrame({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <div className={`page-shell${framed ? " page-shell-device" : ""}`}>
-      <div className="device-frame" ref={frameRef}>
-        <div className="device-screen">{children}</div>
+    <div className={`page-shell ${framed ? "page-shell-device" : view === "embed" ? "page-shell-embed" : "page-shell-app"}`}>
+      <div className="device-presentation">
+        {view !== "embed" && <DemoBar />}
+        <div className="device-frame" ref={frameRef}>
+          <div className="device-screen">{children}</div>
+        </div>
       </div>
     </div>
   );

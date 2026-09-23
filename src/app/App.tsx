@@ -8,6 +8,7 @@ import { OnboardingScreen } from "../components/OnboardingScreen";
 import { ReportScreen } from "../components/report/ReportScreen";
 import { useOnboarding } from "../hooks/useOnboarding";
 import { useExpenseStore } from "../store/expenseStore";
+import { isDemoResetMessage } from "../utils/demoControls";
 
 export function App() {
   const activeTab = useExpenseStore((state) => state.activeTab);
@@ -19,6 +20,18 @@ export function App() {
   useEffect(() => {
     void loadExpenses();
   }, [loadExpenses]);
+
+  useEffect(() => {
+    if (window.parent === window || new URLSearchParams(window.location.search).get("view") !== "embed") return;
+    const resetFromPortfolio = (event: MessageEvent) => {
+      if (isDemoResetMessage(event, window.parent, import.meta.env.DEV)) {
+        // The store also guards personal records against demo reset requests.
+        useExpenseStore.getState().resetDemo();
+      }
+    };
+    window.addEventListener("message", resetFromPortfolio);
+    return () => window.removeEventListener("message", resetFromPortfolio);
+  }, []);
 
   const screen = {
     home: <HomeScreen />,
