@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WaveProgress, type WaveProgressHandle } from "../ui/WaveProgress";
 import { formatPercent, formatWon } from "../../utils/format";
 import { getBudgetStatusMessage } from "../../utils/analytics";
@@ -15,6 +15,16 @@ export function BudgetLevelCard({ spent, monthlyBudget, usage }: BudgetLevelCard
   const lastMoveRef = useRef({ x: 0, y: 0, time: 0 });
   const velocityRef = useRef({ x: 0, y: 0 });
   const [isTouching, setIsTouching] = useState(false);
+  const [showHint, setShowHint] = useState(() => window.sessionStorage.getItem("spendflow_wave_hint_seen") !== "true");
+  const dismissHint = () => {
+    setShowHint(false);
+    window.sessionStorage.setItem("spendflow_wave_hint_seen", "true");
+  };
+  useEffect(() => {
+    if (!showHint) return;
+    const timer = window.setTimeout(dismissHint, 10000);
+    return () => window.clearTimeout(timer);
+  }, [showHint]);
 
   const getImpulsePoint = (clientX: number, clientY: number) => {
     const card = cardRef.current;
@@ -37,6 +47,7 @@ export function BudgetLevelCard({ spent, monthlyBudget, usage }: BudgetLevelCard
       ref={cardRef}
       className={`budget-card ${isTouching ? "budget-card-touching" : ""} ${usage >= 100 ? "danger-ring" : usage >= 80 ? "warning-ring" : ""}`}
       onPointerDown={(event) => {
+        dismissHint();
         event.preventDefault();
         lastMoveRef.current = { x: event.clientX, y: event.clientY, time: performance.now() };
         velocityRef.current = { x: 0, y: 0 };
@@ -61,6 +72,7 @@ export function BudgetLevelCard({ spent, monthlyBudget, usage }: BudgetLevelCard
       onPointerLeave={settleWater}
     >
       <WaveProgress ref={waveRef} percentage={usage} />
+      {showHint && <p className="wave-hint">물결을 터치하거나 드래그해 보세요</p>}
       <div className="budget-content">
         <div className="budget-text-stack">
           <p className="budget-eyebrow">오늘의 소비 흐름</p>

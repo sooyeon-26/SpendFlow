@@ -1,13 +1,7 @@
 import { useRef } from "react";
 import { useExpenseStore } from "../../store/expenseStore";
-import { generateWeeklyInsights, getBudgetUsage, getCategorySummary, getRecent7DaysData, getTodaySpent, getTopCategory, getTotalSpent, getWeeklySpent } from "../../utils/analytics";
-import { detectSpendingAlerts } from "../../utils/detectSpendingAlerts";
-import { generateSpendingInsight } from "../../utils/generateSpendingInsight";
-import { SpendingInsightCard } from "../SpendingInsightCard";
-import { SpendingAlertList } from "../SpendingAlertList";
+import { getBudgetUsage, getTodaySpent, getTopCategory, getTotalSpent, getWeeklySpent } from "../../utils/analytics";
 import { BudgetLevelCard } from "./BudgetLevelCard";
-import { MiniInsightCard } from "./MiniInsightCard";
-import { SpendingFlowChart } from "./SpendingFlowChart";
 import { TodaySummaryCard } from "./TodaySummaryCard";
 import { HomeReportSection } from "./HomeReportSection";
 
@@ -15,19 +9,11 @@ export function HomeScreen() {
   const detailSectionRef = useRef<HTMLElement | null>(null);
   const expenses = useExpenseStore((state) => state.expenses);
   const budget = useExpenseStore((state) => state.budget);
+  const setActiveTab = useExpenseStore((state) => state.setActiveTab);
   const total = getTotalSpent(expenses);
   const usage = getBudgetUsage(total, budget.monthlyBudget);
   const weekly = getWeeklySpent(expenses);
   const top = getTopCategory(expenses);
-  const insights = generateWeeklyInsights(expenses, budget);
-  const categorySummary = getCategorySummary(expenses);
-  const spendingStatus = {
-    monthlyBudget: budget.monthlyBudget,
-    currentSpent: total,
-    usageRate: usage
-  };
-  const alerts = detectSpendingAlerts(expenses, budget.monthlyBudget, total);
-  const spendingInsight = generateSpendingInsight(spendingStatus, categorySummary, alerts, expenses);
   const scrollToDetails = () => {
     detailSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -42,12 +28,9 @@ export function HomeScreen() {
         <i />
       </button>
       <section ref={detailSectionRef} className="home-details" aria-label="상세 소비 흐름">
-        <TodaySummaryCard today={getTodaySpent(expenses)} weekly={weekly} topCategory={top.category} />
+        <TodaySummaryCard today={getTodaySpent(expenses)} weekly={weekly} topCategory={top.amount > 0 ? top.category : "아직 없음"} />
         <HomeReportSection expenses={expenses} budget={budget} />
-        <SpendingFlowChart data={getRecent7DaysData(expenses)} />
-        <MiniInsightCard insight={insights[0]} />
-        <SpendingInsightCard insight={spendingInsight} />
-        <SpendingAlertList alerts={alerts} />
+        <button className="report-link" onClick={() => setActiveTab("report")}>소비 추세와 다음 행동 보기 →</button>
       </section>
     </div>
   );

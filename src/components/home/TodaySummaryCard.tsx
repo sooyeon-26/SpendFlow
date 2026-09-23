@@ -1,18 +1,17 @@
 import { Coffee, CreditCard, CalendarDays } from "lucide-react";
 import { GlassCard } from "../ui/GlassCard";
 import { formatWon } from "../../utils/format";
-import type { ExpenseCategory } from "../../types/expense";
 
 type TodaySummaryCardProps = {
   today: number;
   weekly: number;
-  topCategory: ExpenseCategory;
+  topCategory: string;
 };
 
 export function TodaySummaryCard({ today, weekly, topCategory }: TodaySummaryCardProps) {
   const cards = [
     { label: "오늘 소비", value: formatWon(today), Icon: CreditCard },
-    { label: "이번 주 소비", value: formatWon(weekly), Icon: CalendarDays },
+    { label: "최근 7일", value: formatWon(weekly), Icon: CalendarDays },
     { label: "최다 카테고리", value: topCategory, Icon: Coffee }
   ];
 

@@ -6,17 +6,18 @@ export function TopCategoryCard({ rows }: { rows: { category: ExpenseCategory; a
   return (
     <GlassCard className="report-card">
       <div className="card-heading">
-        <h2>Top 3 카테고리</h2>
-        <span>비율</span>
+        <h2>최근 7일 소비 Top 3</h2>
+        <span>소비 비중</span>
       </div>
       <div className="top-list">
         {rows.map((row) => (
           <div key={row.category}>
             <span>{row.category}</span>
-            <div className="top-bar"><i style={{ width: `${Math.max(12, row.percent)}%` }} /></div>
+            <div className="top-bar"><i style={{ width: `${row.percent}%` }} /></div>
             <strong>{formatWon(row.amount)}</strong>
           </div>
         ))}
+        {!rows.length && <p className="empty-state compact">최근 7일에 기록한 소비가 없어요.</p>}
       </div>
     </GlassCard>
   );

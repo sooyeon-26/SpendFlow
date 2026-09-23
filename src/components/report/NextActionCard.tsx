@@ -1,6 +1,6 @@
 import { ArrowRightCircle } from "lucide-react";
 import type { Budget, Expense } from "../../types/expense";
-import { detectRepeatedSpending, getPreviousWeeklySpent, getRiskCategories, getWeeklySpent } from "../../utils/analytics";
+import { detectRepeatedSpending, getPreviousWeeklySpent, getRiskCategories, getWeeklySpent, getCategoryTotals } from "../../utils/analytics";
 import { formatWon } from "../../utils/format";
 import { GlassCard } from "../ui/GlassCard";
 
@@ -13,8 +13,10 @@ function buildNextAction(expenses: Expense[], budget: Budget): string {
   const previous = getPreviousWeeklySpent(expenses);
 
   if (cafeRisk || repeats.some((repeat) => repeat.label === "카페")) {
-    const remaining = Math.max(0, (cafeRisk?.limit ?? budget.categoryBudgets.카페) - (cafeRisk?.spent ?? 0));
-    return `카페 지출 파동이 반복되고 있어요. 이번 주 남은 카페 예산을 ${formatWon(Math.max(7000, remaining || 7000))} 안에서 잔잔하게 잡아보세요.`;
+    const remaining = Math.max(0, budget.categoryBudgets.카페 - getCategoryTotals(expenses).카페);
+    return remaining > 0
+      ? `이번 달 남은 카페 예산은 ${formatWon(remaining)}이에요. 다음 지출 전에 남은 예산을 확인해 보세요.`
+      : "이번 달 카페 예산을 모두 사용했어요. 다음 지출 전에 예산과 소비 계획을 다시 확인해 보세요.";
   }
 
   if (shoppingRisk) {

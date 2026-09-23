@@ -3,6 +3,7 @@ import { defaultBudget } from "../data/defaultBudget";
 import { addExpense as addExpenseToRepo, deleteExpense as deleteExpenseFromRepo, getExpenses, updateExpense as updateExpenseInRepo } from "../services/expenseRepository";
 import { notifyExpenseCreated } from "../services/automationWebhook";
 import type { Budget, Expense, TabId } from "../types/expense";
+import { isDemoMode, resetDemoExpenses } from "../utils/expenseStorage";
 
 type ToastState = {
   message: string;
@@ -14,6 +15,8 @@ type ExpenseState = {
   budget: Budget;
   activeTab: TabId;
   isLoading: boolean;
+  isDemo: boolean;
+  resetDemo: () => void;
   toast: ToastState;
   selectedCategory: string;
   loadExpenses: () => Promise<void>;
@@ -31,6 +34,11 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   budget: defaultBudget,
   activeTab: "home",
   isLoading: true,
+  isDemo: isDemoMode(),
+  resetDemo: () => {
+    if (!get().isDemo) return;
+    set({ expenses: resetDemoExpenses(), activeTab: "home", selectedCategory: "전체", toast: { message: "시연 데이터를 26%로 되돌렸어요", visible: true } });
+  },
   toast: { message: "", visible: false },
   selectedCategory: "전체",
   loadExpenses: async () => {
@@ -41,7 +49,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
     await addExpenseToRepo(expense);
     const expenses = await getExpenses();
     set({ expenses, toast: { message: "오늘의 소비가 흐름에 추가됐어요", visible: true } });
-    void notifyExpenseCreated(expense, expenses, get().budget).catch((error) => {
+    if (!get().isDemo) void notifyExpenseCreated(expense, expenses, get().budget).catch((error) => {
       console.warn("[SpendFlow webhook skipped]", error);
     });
   },

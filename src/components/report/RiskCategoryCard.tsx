@@ -15,7 +15,7 @@ export function RiskCategoryCard({ risks }: { risks: RiskRow[] }) {
   return (
     <GlassCard className="report-card">
       <div className="card-heading">
-        <h2>위험 수위 카테고리</h2>
+        <h2>이번 달 예산 주의</h2>
         <AlertTriangle size={18} />
       </div>
       {risks.length ? (

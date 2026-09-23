@@ -2,7 +2,11 @@
 
 A mobile-first expense tracker with local storage, rule-based text entry, and a water-level budget display.
 
-[Demo](https://spend-flow-eight.vercel.app/) · [Portfolio](https://sooyeon-developer-portfolio.vercel.app/)
+[Demo](https://spend-flow-eight.vercel.app/?demo=1) · [Portfolio](https://sooyeon-developer-portfolio.vercel.app/)
+
+The demo opens directly at **26%** (KRW 130,000 spent out of a KRW 500,000 budget), with ten sample expenses. Demo edits and resets use separate browser storage and never send automation webhooks. Existing personal records are preserved; use **내 기록 보기** to return to them. Sample dates refresh when the month changes or the demo is reset.
+
+Desktop previews keep a proportional 393×852 viewport across browser zoom changes. The portfolio uses `?view=embed&demo=1` to avoid a second device frame; `view=app` opens the borderless app layout.
 
 ## Overview
 
@@ -30,7 +34,7 @@ Text parsing and spending comments do not call an external AI model.
 | Persistence | localStorage | Expense storage in one browser |
 | Build | Vite | Development server and production build |
 | Optional automation | Vercel Functions, n8n webhooks | Forward events without exposing webhook URLs in the client |
-| Tests | Vitest | Text parsing and spending-alert rules |
+| Tests | Vitest | Parsing, alerts, demo isolation, and reporting-date boundaries |
 
 ## Architecture
 

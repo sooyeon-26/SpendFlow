@@ -14,11 +14,11 @@ export function WeeklySummaryCard({ weekly, previous }: { weekly: number; previo
   return (
     <GlassCard className="weekly-card">
       <div>
-        <span>이번 주 총 소비</span>
+        <span>최근 7일 총 소비</span>
         <strong>{formatWon(weekly)}</strong>
         {previous > 0 ? (
           <>
-            <p className="weekly-change">지난주 대비 {signedChange}</p>
+            <p className="weekly-change">이전 7일 대비 {signedChange}</p>
             <p>{flowCopy}</p>
           </>
         ) : (

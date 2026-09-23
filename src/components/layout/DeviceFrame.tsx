@@ -1,7 +1,17 @@
-import { useLayoutEffect, useRef, type PropsWithChildren } from "react";
+import { useLayoutEffect, useRef, useState, type PropsWithChildren } from "react";
 
 export function DeviceFrame({ children }: PropsWithChildren) {
   const frameRef = useRef<HTMLDivElement>(null);
+  const [desktop, setDesktop] = useState(() => window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  const view = new URLSearchParams(window.location.search).get("view");
+  const framed = view === "device" || (view !== "embed" && view !== "app" && desktop);
+
+  useLayoutEffect(() => {
+    const query = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setDesktop(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   useLayoutEffect(() => {
     const frame = frameRef.current;
@@ -14,7 +24,7 @@ export function DeviceFrame({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <div className="page-shell">
+    <div className={`page-shell${framed ? " page-shell-device" : ""}`}>
       <div className="device-frame" ref={frameRef}>
         <div className="device-screen">{children}</div>
       </div>

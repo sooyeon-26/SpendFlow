@@ -1,7 +1,8 @@
 import type { Budget, Expense, ExpenseCategory } from "../types/expense";
 import { daysAgo, isSameMonth, isWithinDays, shortKoreanDate, toDateKey, weekdayLabel } from "./date";
+import { EXPENSE_CATEGORIES } from "../constants/expenses";
 
-const categories: ExpenseCategory[] = ["식비", "카페", "교통", "쇼핑", "구독", "생활", "기타"];
+const categories = EXPENSE_CATEGORIES;
 
 export function getTotalSpent(expenses: Expense[]): number {
   return expenses.filter((expense) => isSameMonth(expense.date)).reduce((sum, expense) => sum + expense.amount, 0);
@@ -25,13 +26,8 @@ export function getWeeklySpent(expenses: Expense[]): number {
 }
 
 export function getPreviousWeeklySpent(expenses: Expense[]): number {
-  const now = Date.now();
-  const day = 24 * 60 * 60 * 1000;
   return expenses
-    .filter((expense) => {
-      const time = new Date(`${expense.date}T00:00:00`).getTime();
-      return time < now - 6 * day && time >= now - 13 * day;
-    })
+    .filter((expense) => isWithinDays(expense.date, 14) && !isWithinDays(expense.date, 7))
     .reduce((sum, expense) => sum + expense.amount, 0);
 }
 
@@ -41,6 +37,15 @@ export function getCategoryTotals(expenses: Expense[]): Record<ExpenseCategory, 
     totals[category] = monthlyExpenses.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0);
     return totals;
   }, {} as Record<ExpenseCategory, number>);
+}
+
+export function getWeeklyTopCategories(expenses: Expense[]) {
+  const recent = expenses.filter((expense) => isWithinDays(expense.date, 7));
+  const total = recent.reduce((sum, expense) => sum + expense.amount, 0);
+  return categories.map((category) => {
+    const amount = recent.filter((expense) => expense.category === category).reduce((sum, expense) => sum + expense.amount, 0);
+    return { category, amount, percent: total ? amount / total * 100 : 0 };
+  }).filter((row) => row.amount > 0).sort((a, b) => b.amount - a.amount).slice(0, 3);
 }
 
 export function getBudgetUsage(totalSpent: number, monthlyBudget: number): number {

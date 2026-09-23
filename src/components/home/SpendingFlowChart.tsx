@@ -21,7 +21,7 @@ export function SpendingFlowChart({ data }: SpendingFlowChartProps) {
     <GlassCard className="chart-card">
       <div className="card-heading">
         <h2>최근 7일 소비 흐름</h2>
-        <span>soft wave</span>
+        <span>일별 소비</span>
       </div>
       <div className="chart-wrap">
         <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="최근 7일 소비 흐름 차트">

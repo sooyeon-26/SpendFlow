@@ -1,7 +1,8 @@
 import { useExpenseStore } from "../../store/expenseStore";
 import type { ExpenseCategory } from "../../types/expense";
+import { EXPENSE_CATEGORIES } from "../../constants/expenses";
 
-const categories = ["전체", "식비", "카페", "교통", "쇼핑", "구독", "생활", "기타"] as const;
+const categories = ["전체", ...EXPENSE_CATEGORIES];
 
 export function CategoryFilterChips() {
   const selected = useExpenseStore((state) => state.selectedCategory);
@@ -16,7 +17,7 @@ export function CategoryFilterChips() {
   return (
     <div className="chip-row sticky-chips chip-row-fade">
       {categories.map((category) => (
-        <button key={category} className={`filter-chip ${selected === category ? "filter-chip-active" : ""}`} onClick={() => setSelected(category)}>
+        <button key={category} aria-pressed={selected === category} className={`filter-chip ${selected === category ? "filter-chip-active" : ""}`} onClick={() => setSelected(category)}>
           <span>{category}</span>
           <i>{countFor(category)}</i>
         </button>

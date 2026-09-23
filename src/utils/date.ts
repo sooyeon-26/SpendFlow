@@ -1,11 +1,11 @@
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 export function toDateKey(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 export function daysAgo(days: number): string {
-  return toDateKey(new Date(Date.now() - days * DAY_MS));
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return toDateKey(date);
 }
 
 export function isSameMonth(dateKey: string, now = new Date()): boolean {
@@ -15,8 +15,12 @@ export function isSameMonth(dateKey: string, now = new Date()): boolean {
 
 export function isWithinDays(dateKey: string, days: number): boolean {
   const date = new Date(`${dateKey}T00:00:00`).getTime();
-  const start = Date.now() - (days - 1) * DAY_MS;
-  return date >= start;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+  return date >= start.getTime() && date <= end.getTime();
 }
 
 export function shortKoreanDate(dateKey: string): string {

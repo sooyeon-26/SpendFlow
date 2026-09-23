@@ -13,6 +13,7 @@ export function App() {
   const activeTab = useExpenseStore((state) => state.activeTab);
   const loadExpenses = useExpenseStore((state) => state.loadExpenses);
   const isLoading = useExpenseStore((state) => state.isLoading);
+  const isDemo = useExpenseStore((state) => state.isDemo);
   const { shouldShowOnboarding, completeOnboarding } = useOnboarding();
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function App() {
     report: <ReportScreen />
   }[activeTab];
 
-  if (shouldShowOnboarding) {
+  if (shouldShowOnboarding && !isDemo) {
     return <DeviceFrame><OnboardingScreen onComplete={completeOnboarding} /></DeviceFrame>;
   }
 

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ChevronDown, PenLine, Save, Sparkles } from "lucide-react";
+import { ChevronDown, Save, Sparkles } from "lucide-react";
 import { DEFAULT_PAYMENT_METHOD, EXPENSE_CATEGORIES, PAYMENT_METHODS } from "../../constants/expenses";
 import { classifyExpenseText } from "../../services/expenseClassifier";
 import { useExpenseStore } from "../../store/expenseStore";
@@ -63,13 +63,6 @@ export function ExpenseInputCard() {
   return (
     <div className="screen-stack">
       <GlassCard className="input-card">
-        <div className="input-icon">
-          <PenLine size={24} />
-        </div>
-        <div className="input-heading">
-          <strong>소비를 빠르게 기록해요</strong>
-          <span>금액과 카테고리만 선택하면 이번 달 소비 수위에 바로 반영돼요.</span>
-        </div>
         <div className="manual-expense-form">
           <label htmlFor="expense-amount">금액</label>
           <input
@@ -87,6 +80,7 @@ export function ExpenseInputCard() {
                   key={item}
                   type="button"
                   className={`choice-pill ${category === item ? "choice-pill-active" : ""}`}
+                  aria-pressed={category === item}
                   onClick={() => setCategory(item)}
                 >
                   {item}
@@ -102,6 +96,7 @@ export function ExpenseInputCard() {
                   key={item}
                   type="button"
                   className={`choice-pill ${paymentMethod === item ? "choice-pill-active" : ""}`}
+                  aria-pressed={paymentMethod === item}
                   onClick={() => setPaymentMethod(item)}
                 >
                   {item}
