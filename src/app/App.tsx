@@ -3,6 +3,7 @@ import { HistoryScreen } from "../components/history/HistoryScreen";
 import { HomeScreen } from "../components/home/HomeScreen";
 import { InputScreen } from "../components/input/InputScreen";
 import { MobileShell } from "../components/layout/MobileShell";
+import { DeviceFrame } from "../components/layout/DeviceFrame";
 import { OnboardingScreen } from "../components/OnboardingScreen";
 import { ReportScreen } from "../components/report/ReportScreen";
 import { useOnboarding } from "../hooks/useOnboarding";
@@ -26,7 +27,7 @@ export function App() {
   }[activeTab];
 
   if (shouldShowOnboarding) {
-    return <OnboardingScreen onComplete={completeOnboarding} />;
+    return <DeviceFrame><OnboardingScreen onComplete={completeOnboarding} /></DeviceFrame>;
   }
 
   return (
