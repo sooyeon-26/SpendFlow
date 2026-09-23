@@ -158,10 +158,9 @@ export const WaveProgress = forwardRef<WaveProgressHandle, WaveProgressProps>(fu
     reducedMotionQuery.addEventListener?.("change", handleMotionChange);
 
     const resize = () => {
-      const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, DPR_LIMIT);
-      canvas.width = Math.max(1, Math.round(rect.width * dpr));
-      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
@@ -173,9 +172,8 @@ export const WaveProgress = forwardRef<WaveProgressHandle, WaveProgressProps>(fu
       const delta = Math.min(32, time - (lastTimeRef.current || time));
       lastTimeRef.current = time;
 
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
       const level = clamp(percentage, 0, 110);
       const fill = clamp(level, 0, 100);
       const surfaceY = height * ((100 - fill) / 100);
